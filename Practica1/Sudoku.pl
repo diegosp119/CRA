@@ -22,4 +22,18 @@ sudoku([.,.,3,5,8,.,6,2,.,
 
 %REGLAS
 
-generar_lista_posibilidades()
+%Imprimir listas
+
+imprimir_listas :-
+    posiciones(Posiciones),
+    sudoku(Sudoku),
+    writeln(Posiciones),
+    writeln(Sudoku).
+
+%Recorrido de listas
+
+%IDEA: Crear una lista con posiciones y casilla intercaladas, despues utilizar variable anónima en caso de ser necesaria.
+
+%Generacion de lista
+
+generar_lista_posibilidades(Posiciones,Sudoku):-
