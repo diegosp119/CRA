@@ -30,4 +30,4 @@ descendiente(X, Y) :- hijo(X, Z), descendiente(Z, Y).
 % ?- mujer(maria).
 % ?- mujer(X).
 % ?- padre(juan, pedro).
-% ?- hermanos(X, pedro).
+% ?- hermanos(X, pedro). 
