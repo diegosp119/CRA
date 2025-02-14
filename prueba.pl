@@ -67,9 +67,9 @@ eliminar_presentes([X | Resto],Posibles_Cuad, Posibles_Fil, Posibles_Col, Filtra
    
     seleccionar_lista(N // 9 + 1, L1,L2,L3,L4, ListaSeleccionadaCuadricula),  %Para la cuadrícula
 
-    seleccionar_fila((N // 18 * 3) + N mod 9 //3, L1,L2,L3,L4,L5,L6, ListaSeleccionadaFila), %Para la fila
+    seleccionar_fila((N // 18 * 3) + N mod 9 //3 + 1, L1,L2,L3,L4,L5,L6, ListaSeleccionadaFila), %Para la fila
 
-    seleccionar_columna(((N // 9) mod 2 * 3 ) + N mod 3, L1,L2,L3,L4,L5,L6, ListaSeleccionadaFila), %Para la fila
+    seleccionar_columna(((N // 9) mod 2 * 3 ) + N mod 3 + 1 , L1,L2,L3,L4,L5,L6, ListaSeleccionadaFila), %Para la fila
 
     %De momento no se está realizando ningún control de que el número presente esté dentro de las posibilidades
     delete(Posibles_Cuad, X, NuevaListaCuad), % Eliminar X de las posibilidades
