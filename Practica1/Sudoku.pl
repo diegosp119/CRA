@@ -7,6 +7,7 @@ sudoku([., ., 3, ., 2, ., 7, ., .,
     3, 7, 6, ., 4, 8, ., ., .,
     8, ., ., ., 2, ., 7, ., 3,
     ., ., 4, ., ., 2, ., 8, .,
+    ., 9, ., ., ., ., 6, .]).
 
 % Predicado para imprimir el tablero de Sudoku
 imprimir_sudoku([]).
