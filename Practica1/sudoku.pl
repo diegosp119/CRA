@@ -1,5 +1,5 @@
 % Representación del Sudoku como una lista de 81 elementos
-sudoku1_regla_0([
+sudoku_regla_0([
     ., 8, ., 5, 7, 6, 2, ., .,
     ., ., ., 4, ., 2, ., ., .,
     ., ., ., ., 3, 9, 5, 4, 8,
