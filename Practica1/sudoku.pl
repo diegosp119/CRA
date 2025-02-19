@@ -31,12 +31,12 @@ imprimir_sudoku(Tablero) :-
 
 % Predicado para imprimir una fila del tablero
 imprimir_fila(Tablero, Resto) :-
-    tomar(9, Tablero, Fila, Resto),
+    tomar(9, Tablero, Fila, Resto), %Fila almacena los números de la lista y %Resto lo que queda de sudoku
     writeln(Fila).
 
 % Predicado para tomar los primeros N elementos de una lista
 tomar(0, L, [], L).
-tomar(N, [H|T], [H|R], Resto) :-
+tomar(N, [H|T], [H|R], Resto) :- % [H|T] es la lista original, [H|R] los N elementos que se quieren tomar, Resto lo que sobra
     N > 0,
     N1 is N - 1,
     tomar(N1, T, R, Resto).
@@ -58,15 +58,15 @@ miembro_fila(Sudoku, Index, Num) :-
     Fila is Index // 9,
     Inicio is Fila * 9,
     Fin is Inicio + 8,
-    between(Inicio, Fin, I),
-    nth0(I, Sudoku, Num).
+    between(Inicio, Fin, I), %Genera valores para I, comenzando en Inicio y terminando en Fin
+    nth0(I, Sudoku, Num). %Busca el elemento en la posición I dentro de la lista Sudoku y lo unifica con Num
 
 % Predicado para verificar si un número está en la misma columna
 miembro_columna(Sudoku, Index, Num) :-
     Columna is Index mod 9,
-    between(0, 8, Fila),
-    I is Fila * 9 + Columna,
-    nth0(I, Sudoku, Num).
+    between(0, 8, Fila), %Genera valores para Fila, comenzando en 0 y terminando en 8
+    I is Fila * 9 + Columna, %Cada elemento de la columna es la fila*9 + la posición de la columna
+    nth0(I, Sudoku, Num). %Busca el elemento en la posición I dentro de la lista Sudoku y lo unifica con Num
 
 % Predicado para verificar si un número está en el mismo cuadro 3x3
 miembro_cuadro(Sudoku, Index, Num) :-
@@ -110,7 +110,6 @@ imprimir_posibilidades([P|Ps]) :-
     writeln(P),
     imprimir_posibilidades(Ps).
 
-
 % Predicado para aplicar la Regla 0 y actualizar el Sudoku
 resolver_regla_0(Sudoku, NuevoSudoku) :-
     generar_posibilidades(Sudoku, Posibilidades),
@@ -132,28 +131,6 @@ actualizar_sudoku([C|SudokuResto], [P|PosibilidadesResto], [NuevoC|NuevoSudokuRe
     ;   NuevoC = C    % Si no, mantener la casilla original
     ),
     actualizar_sudoku(SudokuResto, PosibilidadesResto, NuevoSudokuResto).
-
-% Predicado para imprimir el sudoku en forma de lista
-imprimir_sudoku_lista :-
-    sudoku(Tablero),
-    writeln(Tablero).
-
-%Predicado para imprimir el sudoku en forma de tablero
-imprimir_sudoku_tablero :-
-    sudoku(Tablero),
-    imprimir_sudoku(Tablero).
-
-%Predicado para generar la lista de posibilidades
-generar_lista_posibilidades :-
-    sudoku(Tablero),
-    generar_posibilidades(Tablero,Posibilidades).
-
-%Predicado para imprimir lista de posibilidades
-imprimir_lista_posibilidades :-
-    sudoku(Tablero),
-    generar_posibilidades(Tablero,Posibilidades),
-    %writeln(Posibilidades),
-    imprimir_posibilidades(Posibilidades).
 
 %Predicado para probar la Regla 0
 probar_regla_0 :-
