@@ -107,6 +107,7 @@ imprimir_repetidos([P|Ps]) :-
 
 % Predicado para inicializar las listas de posibilidades y repetidos para fila, columna y Cuadrado
 inicializar_lista_de_listas(N, ListaDeListas) :-
+    writeln(N),
     length(ListaDeListas, N),       % Crea una lista con N elementos (variables no instanciadas)
     maplist(=([]), ListaDeListas).  % Asigna a cada elemento una lista vacía
 
@@ -168,38 +169,46 @@ procesar_posibilidades_recursivo([H|T], Posibilidades, Fila, Columna, Cuadrado, 
 
 
 % Predicado para procesar las posibilidades
-procesar_posibilidades(Sudoku, Index, Posibilidades) :-
+procesar_posibilidades(Index, Posibilidades) :-
     % Calcular fila, columna y Cuadrado
     Columna is  (((Index//9) mod 3) * 3 )+ (Index mod 3),
-    Fila is ((Index//27) * 3 )+ ((Index mod 9)//9),
-    Cuadricula is Index//9;
+    Fila is ((Index//27) * 3 )+ ((Index mod 9)//3),
+    Cuadricula is Index//9,
+    
 
     % Inicializar listas para las posibilidades y repetidos
     inicializar_listas(9, FilaPosibilidades),
-    inicializar_listas(9, ColumnaPosibilidades),
-    inicializar_listas(9, CuadradoPosibilidades),
-    inicializar_listas(9, FilaRepetidos),
-    inicializar_listas(9, ColumnaRepetidos),
-    inicializar_listas(9, CuadradoRepetidos),
+    writeln(Fila).
+    %inicializar_listas(9, ColumnaPosibilidades),
+    %inicializar_listas(9, CuadradoPosibilidades),
+    %inicializar_listas(9, FilaRepetidos),
+    %inicializar_listas(9, ColumnaRepetidos),
+    %inicializar_listas(9, CuadradoRepetidos),
     
 
     % Procesar las posibilidades, agregar a las listas correspondientes
-    procesar_posibilidades_recursivo(Posibilidades, Fila, Columna, Cuadrado, FilaPosibilidades, ColumnaPosibilidades, CuadradoPosibilidades, FilaRepetidos, ColumnaRepetidos, CuadradoRepetidos),
-    imprimir_repetidos(FilaRepetidos[Fila]),
-    imprimir_repetidos(ColumnaRepetidos[Columna]),
-    imprimir_repetidos(CuadradoRepetidos[Cuadrado]).
+    %procesar_posibilidades_recursivo(Posibilidades, Fila, Columna, Cuadrado, FilaPosibilidades, ColumnaPosibilidades, CuadradoPosibilidades, FilaRepetidos, ColumnaRepetidos, CuadradoRepetidos),
+    %imprimir_repetidos(FilaRepetidos[Fila]),
+    %imprimir_repetidos(ColumnaRepetidos[Columna]),
+    %imprimir_repetidos(CuadradoRepetidos[Cuadrado]).
 
+
+hola(Index, Posibilidades) :-
+    writeln(Index).
 
 
 
 % Predicado para obtener las posibilidades para cada casilla vacía o generar una lista vacía si la casilla está ocupada
-posibilidades_casilla_regla1(Sudoku, Index, Posibilidades) :-
-    nth0(Index, Sudoku, Casilla),
-    (   casilla_vacia(Casilla) -> 
-        findall(Num, (numero(Num), \+ miembro_fila(Sudoku, Index, Num), \+ miembro_columna(Sudoku, Index, Num), \+ miembro_cuadro(Sudoku, Index, Num)), Posibilidades),
-        procesar_posibilidades(Sudoku, Index, Posibilidades)
-    ;   Posibilidades = []
-    ).
+%Esto ignorar
+%posibilidades_casilla_regla1(Sudoku, Index, Posibilidades) :-
+%    nth0(Index, Sudoku, Casilla),
+%    (   casilla_vacia(Casilla) -> 
+%        findall(Num, (numero(Num), \+ miembro_fila(Sudoku, Index, Num), \+ miembro_columna(Sudoku, Index, Num), \+ miembro_cuadro(Sudoku, Index, Num)), Posibilidades)
+%    ;   Posibilidades = []
+%    ),
+%    %hola(Index, Posibilidades).
+%    procesar_posibilidades(Index, Posibilidades).
+    
 
 
 
@@ -207,20 +216,23 @@ posibilidades_casilla_regla1(Sudoku, Index, Posibilidades) :-
 
 
 
-
-
-
-
-% Predicado para generar las listas de posibilidades para todas las casillas
-generar_posibilidades(Sudoku, Posibilidades) :-
-    generar_posibilidades(Sudoku, 0, Posibilidades).
 
 generar_posibilidades(_, 81, []).
 generar_posibilidades(Sudoku, Index, [Posibilidades|Resto]) :-
     Index < 81,
     posibilidades_casilla_regla1(Sudoku, Index, Posibilidades),
     NextIndex is Index + 1,
-    generar_posibilidades(Sudoku, NextIndex, Resto).
+    generar_posibilidades(Sudoku, NextIndex, Resto),
+    
+
+
+% Predicado para generar las listas de posibilidades para todas las casillas
+generar_posibilidades(Sudoku, Posibilidades) :-
+    generar_posibilidades(Sudoku, 0, Posibilidades),
+
+    procesar_posibilidades(Sudoku, 0, Posibilidades).
+
+
 
 % Predicado para imprimir las posibilidades
 imprimir_posibilidades([]).
