@@ -1,14 +1,5 @@
 % Representación del Sudoku como una lista de 81 elementos
-sudoku1([
-    ., ., 9, 6, ., ., ., 1, .,
-    8, ., ., ., ., 1, ., 9, .,
-    7, ., ., ., ., ., ., ., 8,
-    ., 3, ., ., 6, ., ., ., .,
-    ., 4, ., 1, ., 9, ., ., 5,
-    9, ., ., ., ., ., ., ., .,
-    ., 8, ., 9, ., ., 5, 4, .,
-    6, ., ., 7, 1, ., ., ., 3,
-    ., ., 5, ., 8, 4, ., ., 9]).
+
 
 sudoku([
     ., 8, ., 5, 7, 6, 2, ., .,
@@ -89,7 +80,7 @@ casilla_vacia(Casilla) :-
 posibilidades_casilla(Sudoku, Index, Posibilidades) :-
     nth0(Index, Sudoku, Casilla),
     (   casilla_vacia(Casilla) -> 
-        findall(Num, (numero(Num), \+ miembro_fila(Sudoku, Index, Num), \+ miembro_columna(Sudoku, Index, Num), \+ miembro_cuadro(Sudoku, Index, Num)), Posibilidades)
+        findall(Num, ((Num), \+ miembro_fila(Sudoku, Index, Num), \+ miembro_columna(Sudoku, Index, Num), \+ miembro_cuadro(Sudoku, Index, Num)), Posibilidades)
     ;   Posibilidades = []
     ).
 
@@ -162,3 +153,111 @@ probar_regla_0 :-
     imprimir_sudoku(NuevoTablero),
     generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
     imprimir_posibilidades(PosibilidadesActualizadas).
+
+
+
+
+
+
+
+
+
+%REEEEGLAAAA 111111111111
+
+
+
+% Predicado para aplicar la Regla 1 y actualizar el Sudoku
+resolver_regla_1(Sudoku, NuevoSudoku) :-
+    generar_posibilidades(Sudoku, Posibilidades),
+    imprimir_posibilidades(Posibilidades),
+    aplicar_regla_1(Sudoku, Posibilidades, NuevoSudoku).
+
+% Predicado para aplicar la Regla 1 una vez
+aplicar_regla_1(Sudoku, Posibilidades, NuevoSudoku) :-
+    actualizar_sudoku_regla_1(Sudoku, Posibilidades, SudokuActualizado),
+    (   Sudoku \= SudokuActualizado -> 
+        resolver_regla_1(SudokuActualizado, NuevoSudoku)  % Continuar aplicando la Regla 1 si hubo cambios
+    ;   NuevoSudoku = Sudoku  % Si no hubo cambios, el Sudoku está actualizado
+    ).
+
+% Predicado para actualizar el Sudoku con las posibilidades y aplicar la Regla 1
+actualizar_sudoku_regla_1(Sudoku, Posibilidades, NuevoSudoku) :-
+    actualizar_filas(Sudoku, Posibilidades, Sudoku1),
+    actualizar_columnas(Sudoku1, Posibilidades, Sudoku2),
+    actualizar_cuadros(Sudoku2, Posibilidades, NuevoSudoku).
+
+
+
+
+
+% Predicado para actualizar las filas del Sudoku aplicando la Regla 1
+actualizar_filas(Sudoku, Posibilidades, NuevoSudoku) :-
+    actualizar_filas(Sudoku, Posibilidades, 0, NuevoSudoku).
+
+% Caso base: si hemos procesado todas las filas, terminamos
+actualizar_filas(Sudoku, _, 9, Sudoku).
+
+
+
+
+
+
+% Caso recursivo: procesar cada fila
+actualizar_filas(Sudoku, Posibilidades, Fila, NuevoSudoku) :-
+    Inicio is Fila * 9,
+    Fin is Inicio + 8,
+    actualizar_fila(Sudoku, Posibilidades, Inicio, Fin, SudokuActualizado),
+    FilaSiguiente is Fila + 1,
+    actualizar_filas(SudokuActualizado, Posibilidades, FilaSiguiente, NuevoSudoku).
+
+% Predicado para actualizar una fila
+actualizar_fila(Sudoku, Posibilidades, Inicio, Fin, NuevoSudoku) :-
+    findall(Num, (numero(Num), contar_ocurrencias(Posibilidades, Inicio, Fin, Num, 1)), Unicos),
+    actualizar_fila_con_unicos(Sudoku, Posibilidades, Inicio, Fin, Unicos, NuevoSudoku).
+
+% Predicado para contar las ocurrencias de un número en una fila
+contar_ocurrencias(Posibilidades, Inicio, Fin, Num, Count) :-
+    findall(Index, (between(Inicio, Fin, Index), nth0(Index, Posibilidades, Lista), member(Num, Lista)), Indices),
+    length(Indices, Count).
+
+% Predicado para actualizar una fila con números únicos
+actualizar_fila_con_unicos(Sudoku, Posibilidades, Inicio, Fin, [], Sudoku).
+actualizar_fila_con_unicos(Sudoku, Posibilidades, Inicio, Fin, [Num|Resto], NuevoSudoku) :-
+    findall(Index, (between(Inicio, Fin, Index), nth0(Index, Posibilidades, Lista), member(Num, Lista)), [Index]),
+    nth0(Index, Sudoku, .),
+    nth0(Index, NuevoSudoku, Num, Sudoku),
+    eliminar_numero_de_posibilidades(Posibilidades, Inicio, Fin, Num, PosibilidadesActualizadas),
+    actualizar_fila_con_unicos(NuevoSudoku, PosibilidadesActualizadas, Inicio, Fin, Resto, NuevoSudoku).
+
+% Predicado para eliminar un número de las listas de posibilidades en una fila
+eliminar_numero_de_posibilidades([], _, _, _, []).
+eliminar_numero_de_posibilidades([P|Ps], Inicio, Fin, Num, [PActualizado|Resto]) :-
+    nth0(Index, [P|Ps], P),
+    (   between(Inicio, Fin, Index) ->
+        delete(P, Num, PActualizado)
+    ;   PActualizado = P
+    ),
+    eliminar_numero_de_posibilidades(Ps, Inicio, Fin, Num, Resto).
+
+
+% Predicado para probar la Regla 1
+probar_regla_1 :-
+    sudoku(Tablero),
+    resolver_regla_1(Tablero, NuevoTablero),
+    imprimir_sudoku(NuevoTablero),
+    generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
+    imprimir_posibilidades(PosibilidadesActualizadas).
+
+
+
+% Predicado para actualizar las columnas
+actualizar_columnas(Sudoku, Posibilidades, NuevoSudoku) :-
+    % Implementar la lógica para actualizar las columnas
+    % ...
+    NuevoSudoku = Sudoku.  % Placeholder
+
+% Predicado para actualizar los cuadros
+actualizar_cuadros(Sudoku, Posibilidades, NuevoSudoku) :-
+    % Implementar la lógica para actualizar los cuadros
+    % ...
+    NuevoSudoku = Sudoku.  % Placeholder
