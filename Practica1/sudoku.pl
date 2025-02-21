@@ -205,4 +205,46 @@ probar_numeros_unicos :-
     writeln('Prueba CUADRO: Numeros unicos en la casilla seleccionada:'),
     writeln(UnicosCuadro).
 
+% Predicado para aplicar la Regla 1 a todo el Sudoku
+aplicar_regla_1(Sudoku, Posibilidades, NuevoPosibilidades) :-
+    aplicar_regla_1_aux(Sudoku, Posibilidades, 0, NuevoPosibilidades).
+
+% Caso base: cuando hemos revisado todas las casillas (81 en total)
+aplicar_regla_1_aux(_, [], 81, []).
+
+% Caso recursivo: revisar cada casilla y aplicar la regla 1 si se cumple la condición
+aplicar_regla_1_aux(Sudoku, [P|Ps], Index, [NuevoP|NuevoPs]) :-
+    (   P \= [],  % Si la casilla tiene posibilidades (no está ya resuelta)
+        numeros_unicos(fila, Posibilidades, Index, [], UnicosFila),
+        numeros_unicos(columna, Posibilidades, Index, UnicosFila, UnicosColumna),
+        numeros_unicos(cuadro, Posibilidades, Index, UnicosColumna, UnicosFinales),
+        UnicosFinales = [Num, Num, Num]  % Verificar que los tres valores sean iguales
+    ->  NuevoP = [Num]  % Se sustituye por ese número
+    ;   NuevoP = []  % Si no cumple la condición, se vacía la lista de únicos
+    ),
+    NextIndex is Index + 1,
+    aplicar_regla_1_aux(Sudoku, Ps, NextIndex, NuevoPs).
+
+% Predicado para aplicar las reglas 0 y 1 iterativamente hasta que el Sudoku ya no cambie
+resolver_sudoku(Sudoku, SudokuFinal) :-
+    resolver_regla_0(Sudoku, Sudoku0),
+    generar_posibilidades(Sudoku0, Posibilidades),
+    iterar_reglas(Sudoku0, Posibilidades, SudokuFinal).
+
+iterar_reglas(Sudoku, Posibilidades, SudokuFinal) :-
+    aplicar_regla_1(Sudoku, Posibilidades, Posibilidades1),
+    actualizar_sudoku(Sudoku, Posibilidades1, Sudoku1),
+    resolver_regla_0(Sudoku1, Sudoku2),
+    (   Sudoku \= Sudoku2  % Si hubo cambios, seguimos iterando
+    ->  generar_posibilidades(Sudoku2, NuevasPosibilidades),
+        iterar_reglas(Sudoku2, NuevasPosibilidades, SudokuFinal)
+    ;   SudokuFinal = Sudoku  % Si no hubo cambios, terminamos
+    ).
+
+% Predicado para probar la solución completa
+probar_resolucion :-
+    sudoku(Tablero),
+    resolver_sudoku(Tablero, Resultado),
+    imprimir_sudoku(Resultado).
+
 
