@@ -145,53 +145,10 @@ indices_fila(Index, Indices) :-
     Fin is Inicio + 8,
     findall(I, between(Inicio, Fin, I), Indices). % Generar los índices de toda la fila
 
-% Predicado para obtener los números únicos en la fila de una casilla dada
-numeros_unicos_fila(Posibilidades, Index, Unicos) :-
-    % Obtener los índices de la fila
-    indices_fila(Index, IndicesFila), 
-    
-    % Obtener las posibilidades de todas las casillas de la fila (excepto Index)
-    %nth0(I, Posibilidades, P): obtiene la lista de posibilidades de la casilla I.
-    %I \= Index: excluye la casilla que estamos evaluando.
-    %PosibilidadesFila: lista de listas con las posibilidades de todas las demás casillas de la fila.
-    findall(P, (member(I, IndicesFila), I \= Index, nth0(I, Posibilidades, P)), PosibilidadesFila), 
-    
-    % Convertir lista de listas en una sola lista con todos los números de la fila
-    flatten(PosibilidadesFila, TodosNumerosFila),
-    
-    % Obtener las posibilidades de la casilla en Index
-    nth0(Index, Posibilidades, PosibilidadesCasilla),
-    
-    % Filtrar los números que NO se repiten en la fila
-    findall(Num, (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosFila)), Unicos).
-
 % Predicado para obtener los índices de la columna en la que está una casilla
 indices_columna(Index, Indices) :-
     Columna is Index mod 9, % Obtener número de columna
     findall(I, (between(0, 8, Fila), I is Fila * 9 + Columna), Indices). % Generar los índices de la columna
-
-% Predicado para obtener los números únicos en la columna de una casilla dada
-numeros_unicos_columna(Posibilidades, Index, UnicosPrevios, UnicosFinales) :-
-    % Obtener los índices de la columna
-    indices_columna(Index, IndicesColumna),
-
-    % Obtener las posibilidades de todas las casillas de la columna (excepto Index)
-    findall(P, (member(I, IndicesColumna), I \= Index, nth0(I, Posibilidades, P)), PosibilidadesColumna),
-
-    % Aplanar la lista de listas en una sola lista con todos los números de la columna
-    flatten(PosibilidadesColumna, TodosNumerosColumna),
-
-    % Obtener las posibilidades de la casilla en Index
-    nth0(Index, Posibilidades, PosibilidadesCasilla),
-
-    % Filtrar los números que NO se repiten en la columna
-    findall(Num, 
-        (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosColumna)), 
-        UnicosNuevos
-    ),
-
-    % Unir los nuevos únicos con los previos
-    append(UnicosPrevios, UnicosNuevos, UnicosFinales).
 
 % Predicado para obtener los índices del cuadro en el que está una casilla
 indices_cuadro(Index, Indices) :-
@@ -204,48 +161,48 @@ indices_cuadro(Index, Indices) :-
          I is (CuadroFila + DF) * 9 + (CuadroColumna + DC)),
         Indices).
 
-% Predicado para obtener los números únicos en el cuadro de una casilla dada
-numeros_unicos_cuadro(Posibilidades, Index, UnicosPrevios, UnicosFinales) :-
-    % Obtener los índices del cuadro
-    indices_cuadro(Index, IndicesCuadro),
+% Predicado unificado para obtener los números únicos en una fila, columna o cuadro
+numeros_unicos(Tipo, Posibilidades, Index, UnicosPrevios, UnicosFinales) :-
+    (   Tipo = fila -> indices_fila(Index, Indices)
+    ;   Tipo = columna -> indices_columna(Index, Indices)
+    ;   Tipo = cuadro -> indices_cuadro(Index, Indices)
+    ),
+    
+    % Obtener las posibilidades de todas las casillas en la región correspondiente
+    findall(P, (member(I, Indices), I \= Index, nth0(I, Posibilidades, P)), PosibilidadesRegion),
 
-    % Obtener las posibilidades de todas las casillas del cuadro (excepto Index)
-    findall(P, (member(I, IndicesCuadro), I \= Index, nth0(I, Posibilidades, P)), PosibilidadesCuadro),
-
-    % Aplanar la lista de listas en una sola lista con todos los números del cuadro
-    flatten(PosibilidadesCuadro, TodosNumerosCuadro),
+    % Aplanar la lista de listas en una sola
+    flatten(PosibilidadesRegion, TodosNumerosRegion),
 
     % Obtener las posibilidades de la casilla en Index
     nth0(Index, Posibilidades, PosibilidadesCasilla),
 
-    % Filtrar los números que NO se repiten en el cuadro
+    % Filtrar los números que NO se repiten en la región
     findall(Num, 
-        (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosCuadro)), 
+        (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosRegion)), 
         UnicosNuevos
     ),
 
     % Unir los nuevos únicos con los previos
     append(UnicosPrevios, UnicosNuevos, UnicosFinales).
 
-
 probar_numeros_unicos :-
     sudoku(Tablero),
     imprimir_sudoku(Tablero),
-    %resolver_regla_0(Tablero, NuevoTablero),
-    %imprimir_sudoku(NuevoTablero),
     generar_posibilidades(Tablero, PosibilidadesActualizadas),
-    %imprimir_posibilidades(PosibilidadesActualizadas),
 
-    Index = 48, 
-    numeros_unicos_fila(PosibilidadesActualizadas, Index, Unicos1),
+    Index = 13, 
+
+    numeros_unicos(fila, PosibilidadesActualizadas, Index, [], UnicosFila),
     writeln('Prueba FILA: Numeros unicos en la casilla seleccionada:'),
-    writeln(Unicos1),
+    writeln(UnicosFila),
 
-    numeros_unicos_columna(PosibilidadesActualizadas, Index, Unicos1, Unicos2),
+    numeros_unicos(columna, PosibilidadesActualizadas, Index, UnicosFila, UnicosColumna),
     writeln('Prueba COLUMNA: Numeros unicos en la casilla seleccionada:'),
-    writeln(Unicos2),
+    writeln(UnicosColumna),
 
-    numeros_unicos_cuadro(PosibilidadesActualizadas, Index, Unicos2, Unicos3),
+    numeros_unicos(cuadro, PosibilidadesActualizadas, Index, UnicosColumna, UnicosCuadro),
     writeln('Prueba CUADRO: Numeros unicos en la casilla seleccionada:'),
-    writeln(Unicos3).
+    writeln(UnicosCuadro).
+
 
