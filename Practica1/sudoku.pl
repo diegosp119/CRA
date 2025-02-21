@@ -165,16 +165,48 @@ numeros_unicos_fila(Posibilidades, Index, Unicos) :-
     % Filtrar los números que NO se repiten en la fila
     findall(Num, (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosFila)), Unicos).
 
-probar_numeros_unicos_fila :-
+% Predicado para obtener los índices de la columna en la que está una casilla
+indices_columna(Index, Indices) :-
+    Columna is Index mod 9, % Obtener número de columna
+    findall(I, (between(0, 8, Fila), I is Fila * 9 + Columna), Indices). % Generar los índices de la columna
+
+% Predicado para obtener los números únicos en la columna de una casilla dada
+numeros_unicos_columna(Posibilidades, Index, UnicosPrevios, UnicosFinales) :-
+    % Obtener los índices de la columna
+    indices_columna(Index, IndicesColumna),
+
+    % Obtener las posibilidades de todas las casillas de la columna (excepto Index)
+    findall(P, (member(I, IndicesColumna), I \= Index, nth0(I, Posibilidades, P)), PosibilidadesColumna),
+
+    % Aplanar la lista de listas en una sola lista con todos los números de la columna
+    flatten(PosibilidadesColumna, TodosNumerosColumna),
+
+    % Obtener las posibilidades de la casilla en Index
+    nth0(Index, Posibilidades, PosibilidadesCasilla),
+
+    % Filtrar los números que NO se repiten en la columna
+    findall(Num, 
+        (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosColumna)), 
+        UnicosNuevos
+    ),
+
+    % Unir los nuevos únicos con los previos
+    append(UnicosPrevios, UnicosNuevos, UnicosFinales).
+
+probar_numeros_unicos :-
     sudoku(Tablero),
     imprimir_sudoku(Tablero),
     %resolver_regla_0(Tablero, NuevoTablero),
     %imprimir_sudoku(NuevoTablero),
     generar_posibilidades(Tablero, PosibilidadesActualizadas),
-    imprimir_posibilidades(PosibilidadesActualizadas),
+    %imprimir_posibilidades(PosibilidadesActualizadas),
 
-    Index = 13, % Casilla en la fila 3, columna 2
-    numeros_unicos_fila(PosibilidadesActualizadas, Index, Unicos),
-    writeln('Números únicos en la casilla seleccionada:'),
-    writeln(Unicos).
+    Index = 0, % Casilla en la fila 3, columna 2
+    numeros_unicos_fila(PosibilidadesActualizadas, Index, Unicos1),
+    writeln('Prueba FILA: Numeros unicos en la casilla seleccionada:'),
+    writeln(Unicos1),
+
+    numeros_unicos_columna(PosibilidadesActualizadas, Index, Unicos1, Unicos2),
+    writeln('Prueba COLUMNA: Numeros unicos en la casilla seleccionada:'),
+    writeln(Unicos2).
 
