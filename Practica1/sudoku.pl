@@ -137,6 +137,11 @@ probar_regla_0 :-
     resolver_regla_0(Tablero, NuevoTablero),
     imprimir_sudoku(NuevoTablero) .
 
+
+%----------------------REGLA 1------------------------------
+
+%Funciones para calcular los indices de una misma fila, columna o cuadrado:
+
 % Predicado para obtener los índices de la fila en la que está una casilla
 %Dado un índice de casilla (Index), obtiene los índices de todas las casillas de la misma fila en el Sudoku.
 indices_fila(Index, Indices) :-
@@ -161,6 +166,8 @@ indices_cuadro(Index, Indices) :-
          I is (CuadroFila + DF) * 9 + (CuadroColumna + DC)),
         Indices).
 
+
+
 % Predicado unificado para obtener los números únicos en una fila, columna o cuadro
 numeros_unicos(Tipo, Posibilidades, Index, UnicosPrevios, UnicosFinales) :-
     (   Tipo = fila -> indices_fila(Index, Indices)
@@ -168,7 +175,7 @@ numeros_unicos(Tipo, Posibilidades, Index, UnicosPrevios, UnicosFinales) :-
     ;   Tipo = cuadro -> indices_cuadro(Index, Indices)
     ),
     
-    % Obtener las posibilidades de todas las casillas en la región correspondiente
+    % Obtener las posibilidades de todas las casillas en la región correspondiente (fila, columna o cuadro)
     findall(P, (member(I, Indices), I \= Index, nth0(I, Posibilidades, P)), PosibilidadesRegion),
 
     % Aplanar la lista de listas en una sola
@@ -186,6 +193,8 @@ numeros_unicos(Tipo, Posibilidades, Index, UnicosPrevios, UnicosFinales) :-
     % Unir los nuevos únicos con los previos
     append(UnicosPrevios, UnicosNuevos, UnicosFinales).
 
+%Función creada para comprobar que funciona individualmente para cada casilla
+%la detección de posibilidades no repetidas en una misma fila, columna o cuadro
 probar_numeros_unicos :-
     sudoku(Tablero),
     imprimir_sudoku(Tablero),
@@ -204,6 +213,8 @@ probar_numeros_unicos :-
     numeros_unicos(cuadro, PosibilidadesActualizadas, Index, UnicosColumna, UnicosCuadro),
     writeln('Prueba CUADRO: Numeros unicos en la casilla seleccionada:'),
     writeln(UnicosCuadro).
+
+
 
 % Predicado para aplicar la Regla 1 a todo el Sudoku
 aplicar_regla_1(Sudoku, Posibilidades, NuevoPosibilidades) :-
@@ -246,5 +257,3 @@ probar_resolucion :-
     sudoku(Tablero),
     resolver_sudoku(Tablero, Resultado),
     imprimir_sudoku(Resultado).
-
-
