@@ -1,14 +1,14 @@
 % Representación del Sudoku como una lista de 81 elementos
-sudoku1([
-    ., ., 9, 6, ., ., ., 1, .,
-    8, ., ., ., ., 1, ., 9, .,
-    7, ., ., ., ., ., ., ., 8,
-    ., 3, ., ., 6, ., ., ., .,
-    ., 4, ., 1, ., 9, ., ., 5,
-    9, ., ., ., ., ., ., ., .,
-    ., 8, ., 9, ., ., 5, 4, .,
-    6, ., ., 7, 1, ., ., ., 3,
-    ., ., 5, ., 8, 4, ., ., 9]).
+sudoku1(
+    [ ., ., 7, ., ., ., 8, ., .,
+         ., 4, 5, 7, 6, ., ., ., 2,
+         6, ., ., ., 4, ., 3, ., 5,
+         8, 6, ., 5, ., ., ., 4, .,
+         ., ., 3, 8, ., 4, ., 6, .,
+         7, 2, 6, 9, ., ., 8, 3, .,
+         ., 5, ., ., ., ., 4, 7, .,
+         7, ., 4, ., ., ., ., ., 6,
+         3, 4, ., ., 6, ., 6, 2, .]).
 
 sudoku([
     ., 8, ., 5, 7, 6, 2, ., .,
@@ -21,7 +21,6 @@ sudoku([
     3, ., 8, 7, ., ., ., 2, 5,
     ., 4, ., ., ., ., ., ., 6
 ]).
-
 
 % Predicado para imprimir el tablero de Sudoku
 imprimir_sudoku([]).
@@ -134,8 +133,46 @@ actualizar_sudoku([C|SudokuResto], [P|PosibilidadesResto], [NuevoC|NuevoSudokuRe
 
 %Predicado para probar la Regla 0
 probar_regla_0 :-
-    sudoku(Tablero),
+    sudoku1(Tablero),
     resolver_regla_0(Tablero, NuevoTablero),
-    imprimir_sudoku(NuevoTablero),
-    generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
-    imprimir_posibilidades(PosibilidadesActualizadas).
+    imprimir_sudoku(NuevoTablero) .
+
+% Predicado para obtener los índices de la fila en la que está una casilla
+%Dado un índice de casilla (Index), obtiene los índices de todas las casillas de la misma fila en el Sudoku.
+indices_fila(Index, Indices) :-
+    Fila is Index // 9,       % Obtener número de fila (división entera)
+    Inicio is Fila * 9,       % Índice de inicio de la fila
+    Fin is Inicio + 8,
+    findall(I, between(Inicio, Fin, I), Indices). % Generar los índices de toda la fila
+
+% Predicado para obtener los números únicos en la fila de una casilla dada
+numeros_unicos_fila(Posibilidades, Index, UnicosFila) :-
+    % Obtener los índices de la fila
+    indices_fila(Index, IndicesFila), 
+    
+    % Obtener las posibilidades de todas las casillas de la fila (excepto Index)
+    %nth0(I, Posibilidades, P): obtiene la lista de posibilidades de la casilla I.
+    %I \= Index: excluye la casilla que estamos evaluando.
+    %PosibilidadesFila: lista de listas con las posibilidades de todas las demás casillas de la fila.
+    findall(P, (member(I, IndicesFila), I \= Index, nth0(I, Posibilidades, P)), PosibilidadesFila), 
+    
+    % Convertir lista de listas en una sola lista con todos los números de la fila
+    flatten(PosibilidadesFila, TodosNumerosFila),
+    
+    % Obtener las posibilidades de la casilla en Index
+    nth0(Index, Posibilidades, PosibilidadesCasilla),
+    
+    % Filtrar los números que NO se repiten en la fila
+    findall(Num, (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosFila)), UnicosFila).
+
+probar_numeros_unicos_fila :-
+    sudoku_prueba(Tablero),
+    imprimir_sudoku(Tablero),
+    generar_posibilidades(Tablero, PosibilidadesActualizadas),
+    imprimir_posibilidades(PosibilidadesActualizadas),
+
+    Index = 4, % Casilla en la fila 3, columna 2
+    numeros_unicos_fila(Posibilidades, Index, UnicosFila),
+    writeln('Números únicos en la casilla seleccionada:'),
+    writeln(UnicosFila).
+
