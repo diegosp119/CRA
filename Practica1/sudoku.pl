@@ -1,14 +1,14 @@
 % Representación del Sudoku como una lista de 81 elementos
-sudoku1(
-    [ ., ., 7, ., ., ., 8, ., .,
-         ., 4, 5, 7, 6, ., ., ., 2,
-         6, ., ., ., 4, ., 3, ., 5,
-         8, 6, ., 5, ., ., ., 4, .,
-         ., ., 3, 8, ., 4, ., 6, .,
-         7, 2, 6, 9, ., ., 8, 3, .,
-         ., 5, ., ., ., ., 4, 7, .,
-         7, ., 4, ., ., ., ., ., 6,
-         3, 4, ., ., 6, ., 6, 2, .]).
+sudoku1([
+    ., ., 7, ., ., ., 8, ., .,
+    ., 4, 5, 7, 6, ., ., ., 2,
+    6, ., ., ., 4, ., 3, ., 5,
+    8, 6, ., 5, ., ., ., 4, .,
+    ., ., 3, 8, ., 4, ., 6, .,
+    7, 2, 6, 9, ., ., 8, 3, .,
+    ., 5, ., ., ., ., 4, 7, .,
+    7, ., 4, ., ., ., ., ., 6,
+    3, 4, ., ., 6, ., 6, 2, .]).
 
 sudoku([
     ., 8, ., 5, 7, 6, 2, ., .,
@@ -146,7 +146,7 @@ indices_fila(Index, Indices) :-
     findall(I, between(Inicio, Fin, I), Indices). % Generar los índices de toda la fila
 
 % Predicado para obtener los números únicos en la fila de una casilla dada
-numeros_unicos_fila(Posibilidades, Index, UnicosFila) :-
+numeros_unicos_fila(Posibilidades, Index, Unicos) :-
     % Obtener los índices de la fila
     indices_fila(Index, IndicesFila), 
     
@@ -163,16 +163,18 @@ numeros_unicos_fila(Posibilidades, Index, UnicosFila) :-
     nth0(Index, Posibilidades, PosibilidadesCasilla),
     
     % Filtrar los números que NO se repiten en la fila
-    findall(Num, (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosFila)), UnicosFila).
+    findall(Num, (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosFila)), Unicos).
 
 probar_numeros_unicos_fila :-
-    sudoku_prueba(Tablero),
+    sudoku(Tablero),
     imprimir_sudoku(Tablero),
+    %resolver_regla_0(Tablero, NuevoTablero),
+    %imprimir_sudoku(NuevoTablero),
     generar_posibilidades(Tablero, PosibilidadesActualizadas),
     imprimir_posibilidades(PosibilidadesActualizadas),
 
-    Index = 4, % Casilla en la fila 3, columna 2
-    numeros_unicos_fila(Posibilidades, Index, UnicosFila),
+    Index = 13, % Casilla en la fila 3, columna 2
+    numeros_unicos_fila(PosibilidadesActualizadas, Index, Unicos),
     writeln('Números únicos en la casilla seleccionada:'),
-    writeln(UnicosFila).
+    writeln(Unicos).
 
