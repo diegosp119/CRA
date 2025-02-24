@@ -1,4 +1,47 @@
-%Hechos
+% Representación del Sudoku como una lista de 81 elementos
+sudoku1([
+    ., ., 9, 6, ., ., ., 1, .,
+    8, ., ., ., ., 1, ., 9, .,
+    7, ., ., ., ., ., ., ., 8,
+    ., 3, ., ., 6, ., ., ., .,
+    ., 4, ., 1, ., 9, ., ., 5,
+    9, ., ., ., ., ., ., ., .,
+    ., 8, ., 9, ., ., 5, 4, .,
+    6, ., ., 7, 1, ., ., ., 3,
+    ., ., 5, ., 8, 4, ., ., 9]).
+
+sudoku([
+    ., 8, ., 5, 7, 6, 2, ., .,
+    ., ., ., 4, ., 2, ., ., .,
+    ., ., ., ., 3, 9, 5, 4, 8,
+    6, 3, ., 9, ., ., 8, 5, 2,
+    ., 9, ., 2, ., ., 3, 7, .,
+    8, ., ., ., 5, ., 6, 9, 4,
+    2, 5, 7, 6, ., 3, 4, 8, 9,
+    3, ., 8, 7, ., ., ., 2, 5,
+    ., 4, ., ., ., ., ., ., 6
+]).
+
+
+% Predicado para imprimir el tablero de Sudoku
+imprimir_sudoku([]).
+imprimir_sudoku(Tablero) :-
+    imprimir_fila(Tablero, Resto),
+    imprimir_sudoku(Resto).
+
+% Predicado para imprimir una fila del tablero
+imprimir_fila(Tablero, Resto) :-
+    tomar(9, Tablero, Fila, Resto),
+    writeln(Fila).
+
+% Predicado para tomar los primeros N elementos de una lista
+tomar(0, L, [], L).
+tomar(N, [H|T], [H|R], Resto) :-
+    N > 0,
+    N1 is N - 1,
+    tomar(N1, T, R, Resto).
+
+% Hechos
 numero(1).
 numero(2).
 numero(3).
@@ -10,87 +53,207 @@ numero(8).
 numero(9).
 
 
-sudoku([.,.,.,.,3,.,.,.,.,.,.,.,.,4,.,.,.,.,.,.,.,.,5,.,.,.,.,.,.,.,.,6,.,.,.,.]).
+% Predicado para verificar si un número está en la misma fila
+miembro_fila(Sudoku, Index, Num) :-
+    Fila is Index // 9,
+    Inicio is Fila * 9,
+    Fin is Inicio + 8,
+    between(Inicio, Fin, I),
+    nth0(I, Sudoku, Num).
 
-posibilidades_cuadrados([[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9]]).
+% Predicado para verificar si un número está en la misma columna
+miembro_columna(Sudoku, Index, Num) :-
+    Columna is Index mod 9,
+    between(0, 8, Fila),
+    I is Fila * 9 + Columna,
+    nth0(I, Sudoku, Num).
 
-posibilidades_filas([[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9]]).
-
-posibilidades_columnas([[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9]]).
-
-
-
-
-
-
-
-
-
-% Manera de evaluar posibles de un cuadrado
-
-% Regla para obtener los números presentes en cuadrado y descartarlos de las posibilidades
-
-
-%Para seleccionar la lista de los cuadrados
-seleccionar_lista(1, L1, _, _, _, L1).
-seleccionar_lista(2, _, L2, _, _, L2).
-seleccionar_lista(3, _, _, L3, _, L3).
-seleccionar_lista(4, _, _, _, L4, L4).
-
-
-%Para seleccionar la filtradas
-seleccionar_fila(1, L1, _, _, _, _, _, L1).
-seleccionar_fila(2, _, L2, _, _, _, _, L2).
-seleccionar_fila(3, _, _, L3, _, _, _, L3).
-seleccionar_fila(4, _, _, _, L4, _, _, L4).
-seleccionar_fila(5, _, _, _, _, L5, _, L5).
-seleccionar_fila(6, _, _, _, _, _, L6, L6).
-
-%Para seleccionar la columna
-seleccionar_columna(1, L1, _, _, _, _, _, L1).
-seleccionar_columna(2, _, L2, _, _, _, _, L2).
-seleccionar_columna(3, _, _, L3, _, _, _, L3).
-seleccionar_columna(4, _, _, _, L4, _, _, L4).
-seleccionar_columna(5, _, _, _, _, L5, _, L5).
-seleccionar_columna(6, _, _, _, _, _, L6, L6).
+% Predicado para verificar si un número está en el mismo cuadro 3x3
+miembro_cuadro(Sudoku, Index, Num) :-
+    Fila is Index // 9,
+    Columna is Index mod 9,
+    CuadroFila is (Fila // 3) * 3,
+    CuadroColumna is (Columna // 3) * 3,
+    FInicio is CuadroFila * 9 + CuadroColumna,
+    FFin is FInicio + 2,
+    CInicio is CuadroFila * 9 + CuadroColumna + 18,
+    CFin is CInicio + 2,
+    (between(FInicio, FFin, I); between(CInicio, CFin, I)),
+    nth0(I, Sudoku, Num).
 
 
+repetidos_fila(Posibilidades, Index, Num) :-
+    Fila is Index // 9,
+    Inicio is Fila * 9,
+    Fin is Inicio + 8,
+    between(Inicio, Fin, I),
+    nth0(I, Sudoku, Num).
+
+% Predicado para verificar si un número está en la misma columna
+repetidos_columna(Sudoku, Index, Num) :-
+    Columna is Index mod 9,
+    between(0, 8, Fila),
+    I is Fila * 9 + Columna,
+    nth0(I, Sudoku, Num).
+
+% Predicado para verificar si un número está en el mismo cuadro 3x3
+repetidos_cuadro(Sudoku, Index, Num) :-
+    Fila is Index // 9,
+    Columna is Index mod 9,
+    CuadroFila is (Fila // 3) * 3,
+    CuadroColumna is (Columna // 3) * 3,
+    FInicio is CuadroFila * 9 + CuadroColumna,
+    FFin is FInicio + 2,
+    CInicio is CuadroFila * 9 + CuadroColumna + 18,
+    CFin is CInicio + 2,
+    (between(FInicio, FFin, I); between(CInicio, CFin, I)),
+    nth0(I, Sudoku, Num).
 
 
-% Caso base: si la lista de cuadrado está vacía, devolver las posibilidades sin cambios
-eliminar_presentes([], Posibles_Cuad, Posibles_Fil, Posibles_Col, Posibles_Cuad, Posibles_Fil, Posibles_Col, N):-
+% Predicado para verificar si una casilla está vacía
+casilla_vacia(Casilla) :-
+    \+ number(Casilla).
 
-eliminar_presentes([X | Resto],Posibles_Cuad, Posibles_Fil, Posibles_Col, Filtradas, N) :-
-    N is N + 1;
-    numero(X), % Si X es un número válido en el Sudoku
+% Predicado para obtener las posibilidades para cada casilla vacía o generar una lista vacía si la casilla está ocupada
+posibilidades_casilla(Sudoku, Index, Posibilidades) :-
+    nth0(Index, Sudoku, Casilla),
+    (   casilla_vacia(Casilla) -> 
+        findall(Num, (numero(Num), \+ miembro_fila(Sudoku, Index, Num), \+ miembro_columna(Sudoku, Index, Num), \+ miembro_cuadro(Sudoku, Index, Num)), Posibilidades)
+    ;   Posibilidades = []
+    ).
 
-   
-    seleccionar_lista(N // 9 + 1, L1,L2,L3,L4, ListaSeleccionadaCuadricula),  %Para la cuadrícula
 
-    seleccionar_fila((N // 18 * 3) + N mod 9 //3 + 1, L1,L2,L3,L4,L5,L6, ListaSeleccionadaFila), %Para la fila
+% Predicado para procesar las posibilidades
+procesar_posibilidades(Index, Posibilidades) :-
+    % Calcular fila, columna y Cuadrado
 
-    seleccionar_columna(((N // 9) mod 2 * 3 ) + N mod 3 + 1 , L1,L2,L3,L4,L5,L6, ListaSeleccionadaFila), %Para la fila
-
-    %De momento no se está realizando ningún control de que el número presente esté dentro de las posibilidades
-    delete(Posibles_Cuad, X, NuevaListaCuad), % Eliminar X de las posibilidades
-    delete (Posibles_Fil, X, NuevaListaFil), % Eliminar X de las posibilidades de filas
-    delete(Posibles_Col, X, NuevaListaCol), % Eliminar X de las posibilidades de columnas
+    Columna is  (((Index//9) mod 3) * 3 )+ (Index mod 3),
+    Fila is ((Index//27) * 3 )+ ((Index mod 9)//3),
+    Cuadricula is Index//9,
     
-    eliminar_presentes(Resto, NuevaListaCuad, NuevaListaFil, NuevaListaCol, Filtradas, N).
-     % Llamada recursiva
 
-eliminar_presentes([_| Resto], Posibles_Cuad, Posibles_Fil, Posibles_Col, Posibles_Cuad, Posibles_Fil, Posibles_Col, Filtradas, N) :- 
-    N is N + 1,
-    eliminar_presentes(Resto, Posibles, Filtradas, N).
-    % Ignorar elementos no numéricos (como '.') y continuar
+    % Inicializar listas para las posibilidades y repetidos
+    inicializar_listas(9, FilaPosibilidades),
+    writeln(Fila).
+    %inicializar_listas(9, ColumnaPosibilidades),
+    %inicializar_listas(9, CuadradoPosibilidades),
+    %inicializar_listas(9, FilaRepetidos),
+    %inicializar_listas(9, ColumnaRepetidos),
+    %inicializar_listas(9, CuadradoRepetidos),
+    
 
-% Regla principal para obtener las posibilidades filtradas
-posibilidades_filtradas(Filtradas) :-
-    sudoku(Sudoku),
-    posibilidades_cuadrados(Posibles_Cuad),
-    posibilidades_filas(Posibles_Fil),
-    posibilidades_columnas(Posibles_Col),
-    eliminar_presentes(Sudoku, Posibles_Cuad, Posibles_Fil, Posibles_Col, Filtradas, -1).
+    % Procesar las posibilidades, agregar a las listas correspondientes
+    %procesar_posibilidades_recursivo(Posibilidades, Fila, Columna, Cuadrado, FilaPosibilidades, ColumnaPosibilidades, CuadradoPosibilidades, FilaRepetidos, ColumnaRepetidos, CuadradoRepetidos),
+    %imprimir_repetidos(FilaRepetidos[Fila]),
+    %imprimir_repetidos(ColumnaRepetidos[Columna]),
+    %imprimir_repetidos(CuadradoRepetidos[Cuadrado]).
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+generar_posibilidades(_, 81, []).
+generar_posibilidades(Sudoku, Index, [Posibilidades|Resto]) :-
+    Index < 81,
+    posibilidades_casilla_regla1(Sudoku, Index, Posibilidades),
+    NextIndex is Index + 1,
+    generar_posibilidades(Sudoku, NextIndex, Resto),
+    
+
+
+% Predicado para generar las listas de posibilidades para todas las casillas
+generar_posibilidades(Sudoku, Posibilidades) :-
+    generar_posibilidades(Sudoku, 0, Posibilidades),
+
+    procesar_posibilidades(Sudoku, 0, Posibilidades).
+
+
+
+% Predicado para imprimir las posibilidades
+imprimir_posibilidades([]).
+imprimir_posibilidades([P|Ps]) :-
+    writeln(P),
+    imprimir_posibilidades(Ps).
+
+
+% Predicado para aplicar la Regla 0 y actualizar el Sudoku
+resolver_regla_0(Sudoku, NuevoSudoku) :-
+    generar_posibilidades(Sudoku, Posibilidades),
+    aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku).
+
+% Predicado para aplicar la Regla 0 una vez
+aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku) :-
+    actualizar_sudoku(Sudoku, Posibilidades, SudokuActualizado),
+    (   Sudoku \= SudokuActualizado -> 
+        resolver_regla_0(SudokuActualizado, NuevoSudoku)  % Continuar aplicando la Regla 0 si hubo cambios
+    ;   NuevoSudoku = Sudoku  % Si no hubo cambios, el Sudoku está actualizado
+    ).
+
+% Predicado para actualizar el Sudoku con las posibilidades y aplicar la Regla 0
+actualizar_sudoku([], [], []).
+actualizar_sudoku([C|SudokuResto], [P|PosibilidadesResto], [NuevoC|NuevoSudokuResto]) :-
+    (   length(P, 1) -> 
+        [NuevoC] = P  % Si solo hay una posibilidad, actualizar la casilla con ese número
+    ;   NuevoC = C    % Si no, mantener la casilla original
+    ),
+    actualizar_sudoku(SudokuResto, PosibilidadesResto, NuevoSudokuResto).
+
+% Predicado para imprimir el sudoku en forma de lista
+imprimir_sudoku_lista :-
+    sudoku(Tablero),
+    writeln(Tablero).
+
+%Predicado para imprimir el sudoku en forma de tablero
+imprimir_sudoku_tablero :-
+    sudoku(Tablero),
+    imprimir_sudoku(Tablero).
+
+%Predicado para generar la lista de posibilidades
+generar_lista_posibilidades :-
+    sudoku(Tablero),
+    generar_posibilidades(Tablero,Posibilidades).
+
+%Predicado para imprimir lista de posibilidades
+imprimir_lista_posibilidades :-
+    sudoku(Tablero),
+    generar_posibilidades(Tablero,Posibilidades),
+    %writeln(Posibilidades),
+    imprimir_posibilidades(Posibilidades).
+
+%Predicado para probar la Regla 0
+probar_regla_0 :-
+    sudoku(Tablero),
+    resolver_regla_0(Tablero, NuevoTablero),
+    imprimir_sudoku(NuevoTablero),
+    generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
+    imprimir_posibilidades(PosibilidadesActualizadas).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
