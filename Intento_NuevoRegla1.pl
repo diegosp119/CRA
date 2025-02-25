@@ -132,20 +132,6 @@ obtener_valores_por_indices([I|RestIndices], Lista_Original, [Valor|ValoresResta
 
 
 
-
-
-% Agregar los conteos de una lista individual a la lista de conteos totales
-%agregar_conteo([], Conteo, Conteo).
-%agregar_conteo([H|T], ConteoPrevio, ConteoFinal) :-
-    %selectchk(H-N, ConteoPrevio, Resto, N1 is N + 1), % Si ya está en la lista, incrementa el contador
-    %agregar_conteo(T, [H-N1|Resto], ConteoFinal).
-%agregar_conteo([H|T], ConteoPrevio, ConteoFinal) :-
-    %\+ member(H-_, ConteoPrevio), % Si no está en la lista, agrégalo con contador 1
-    %agregar_conteo(T, [H-1|ConteoPrevio], ConteoFinal).
-
-
-
-
 % Regla para incrementar el conteo de un número si ya está en la lista
 incrementar_conteo(H, [H-N|Resto], [H-N1|Resto]) :-
     N1 is N + 1.
@@ -200,11 +186,6 @@ eliminar_repetidos(Listas, Resultado) :-
 
 
 
-%nth1_from_list(Valores, Indice, Valor) :-
-    %nth1(Indice, Valores, Valor).  % Obtiene el valor de la lista de acuerdo al índice
-
-
-
 % Eliminar repetidos dentro de las listas de filas, columnas y cuadrados
 eliminar_repetidos_de_las_listas([],_, _).
 eliminar_repetidos_de_las_listas([Lista|Rest], Indice, Valores) :-
@@ -212,9 +193,6 @@ eliminar_repetidos_de_las_listas([Lista|Rest], Indice, Valores) :-
     writeln("Lista: "), writeln(Lista),
     obtener_valores_por_indices(Lista, Valores, Valores_Extraidos),
     writeln("ValoresExtraidos: "), writeln(Valores_Extraidos),
-
-    %maplist(nth1_from_list(Valores), Lista, Valores_Extraidos),
-    %writeln("ValoresExtraidos: "), writeln(Valores_Extraidos),
 
     %HASTAAQUIVABIEN
     % Eliminar los repetidos en esa lista
@@ -229,6 +207,57 @@ eliminar_repetidos_de_las_listas([Lista|Rest], Indice, Valores) :-
     Nuevo_Indice is Indice + 1,
     % Continuar con las siguientes listas
     eliminar_repetidos_de_las_listas(Rest, Nuevo_Indice, Valores).
+
+
+
+
+
+% Reemplazar un elemento en una lista en una posición dada
+replace([_|T], 1, X, [X|T]).
+replace([H|T], N, X, [H|R]) :- N > 1, N1 is N - 1, replace(T, N1, X, R).
+
+
+% Función que actualiza las posibilidades de acuerdo a los valores únicos
+actualizar_posibilidades_con_unicos(Posibilidades, 82,_,_,_, NuevaPosibilidades) :-
+    % Recorrer todas las casillas del Sudoku (de 1 a 81)
+    writeln("Llego al fin del sudoku"),
+    NuevaPosibilidades = Posibilidades.
+
+% Caso recursivo: procesar una casilla y actualizarla si corresponde
+actualizar_posibilidades_con_unicos(Posibilidades, Indice, FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades) :-
+    % Extraer el valor de las posibles posibilidades en el índice actual
+    nth1(Indice, Posibilidades, ListaPosibilidades),
+    
+    % Comprobar si hay un valor único en FilaUnicos, ColumnaUnicos o CuadradoUnicos
+    (   nth1(Indice, FilaUnicos, ValorUnicoFila),
+        ValorUnicoFila \= [] % Verifica que no esté vacío
+    ->  % Si hay un valor único en la fila, lo actualizamos en las posibilidades
+        Reemplazo = ValorUnicoFila
+    ;   nth1(Indice, ColumnaUnicos, ValorUnicoColumna),
+        ValorUnicoColumna \= []
+    ->  % Si hay un valor único en la columna, lo actualizamos en las posibilidades
+        Reemplazo = ValorUnicoColumna
+    ;   nth1(Indice, CuadradoUnicos, ValorUnicoCuadrado),
+        ValorUnicoCuadrado \= []
+    ->  % Si hay un valor único en el cuadrado, lo actualizamos en las posibilidades
+        Reemplazo = ValorUnicoCuadrado
+    ;   % Si no hay valores únicos en fila, columna o cuadrado, mantenemos las posibilidades
+        Reemplazo = ListaPosibilidades
+    ),
+
+    % Reemplazar el valor en la lista de Posibilidades
+    replace(Posibilidades, Indice, Reemplazo, NuevaPosibilidadesParcial),
+
+    % Llamada recursiva para procesar el siguiente índice
+    IndiceSiguiente is Indice + 1,
+    actualizar_posibilidades_con_unicos(NuevaPosibilidadesParcial,IndiceSiguiente ,FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades).
+
+
+
+
+
+
+
 
 
 
@@ -252,12 +281,27 @@ verificar_repetidos(Filas, Columnas, Cuadrados) :-
 %HAsta aquí es lo que queda por hacer
 
 
+actualizar_posibilidades_pareja(Posibilidades, Indice, VecinosFila, UnicoFila, NuevaPosibilidades) :-
+    % Extraer los valores únicos
+    [ValorIndice, ValorVecino] = UnicoFila,
+
+    % Verificar que los valores no sean vacíos antes de reemplazar
+    (ValorIndice \= [] -> replace(Posibilidades, Indice, ValorIndice, TempPos1) ; TempPos1 = Posibilidades),
+    (ValorVecino \= [] -> replace(TempPos1, VecinosFila, ValorVecino, NuevaPosibilidades) ; NuevaPosibilidades = TempPos1).
+
+
 
 
 % Caso base: cuando hemos procesado todas las casillas
-aplicar_regla_1(_, 82, _, FilaUnicos, ColumnaUnicos, CuadradoUnicos) :-
+aplicar_regla_1(_, 82, Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos) :-
     writeln("Regla 1 aplicada con exito"),
-    verificar_repetidos(FilaUnicos, ColumnaUnicos, CuadradoUnicos).
+    verificar_repetidos(FilaUnicos, ColumnaUnicos, CuadradoUnicos),
+    actualizar_posibilidades_con_unicos(Posibilidades, 1,FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades),
+    %writeln("Posibilidades: "), writeln(Posibilidades),
+    %writeln("Nuevas Posibilidades"), writeln(NuevaPosibilidades),
+    writeln("Posibilidades, Sudoku: "),imprimir_sudoku(Posibilidades),
+    writeln("Nuevas Posibilidades, Sudoku: "), imprimir_sudoku(NuevaPosibilidades).
+
 
 % Caso recursivo: procesar cada casilla del Sudoku
 aplicar_regla_1(Sudoku, Indice_Regla1, Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos) :-
@@ -345,13 +389,29 @@ aplicar_regla_1(Sudoku, Indice_Regla1, Posibilidades, FilaUnicos, ColumnaUnicos,
     %writeln("Posibles Vecinos Fila: "), writeln(PosibilidadesVecinosFila),
     nth1(VecinosColumna, Posibilidades, PosibilidadesVecinosColumna),
     nth1(VecinosCuadrado, Posibilidades, PosibilidadesVecinosCuadrado),
+    %nth1(Indice_Regla1, Posibilidades, PosibilidadesPosActual),
     
     % Aquí debes implementar la lógica para encontrar valores únicos
     % en la fila, columna y cuadrado.
     % Por ahora, dejamos un marcador "_" indicando que no se ha calculado.
+    
+    %Pareja_Val_Fila = [PosibilidadesVecinosFila,PosibilidadesPosActual],
+    %Pareja_Val_Col = [PosibilidadesVecinosColumna,PosibilidadesPosActual],
+    %Pareja_Val_Cuad = [PosibilidadesVecinosCuadrado,PosibilidadesPosActual],
+    %eliminar_repetidos(Pareja_Val_Fila, UnicoFila), %mas adelante reemplazaré en posibilidades esos dos valores en su posición correspondiente
+    %eliminar_repetidos(Pareja_Val_Col, UnicoColumna),
+    %eliminar_repetidos(Pareja_Val_Cuad, UnicoColumna),
+
+    %Actualizo el valor de Posibilidades
+    %actualizar_posibilidades_pareja(Posibilidades, Indice, VecinosFila, UnicoFila, NuevaPosibilidades),
+    %actualizar_posibilidades_pareja(NuevaPosibilidades, Indice, VecinosColumna, UnicoColumna, NuevaPosibilidades_2),
+    %actualizar_posibilidades_pareja(NuevaPosibilidades_2, Indice, VecinosCuadrado, UnicoCuadrado, NuevaPosibilidades_3),
+
+
     findall(Valor, (member(Valor, PosiblesValores), \+ member(Valor, PosibilidadesVecinosFila)), UnicoFila),
     findall(Valor, (member(Valor, PosiblesValores), \+ member(Valor, PosibilidadesVecinosColumna)), UnicoColumna),
     findall(Valor, (member(Valor, PosiblesValores), \+ member(Valor, PosibilidadesVecinosCuadrado)), UnicoCuadrado),
+    writeln("Unico Fila: "), writeln(UnicoFila),
 
     (UnicoFila = [] -> ValorUnicoFila = 0 ; [ValorUnicoFila|_] = UnicoFila),
     (UnicoColumna = [] -> ValorUnicoColumna = 0 ; [ValorUnicoColumna|_] = UnicoColumna),
@@ -396,7 +456,7 @@ resolver_regla_1(Sudoku, NuevoSudoku) :-
 resolver_regla_0(Sudoku, NuevoSudoku) :-
     generar_posibilidades(Sudoku, Posibilidades),
     %LLAMADAREGLA1
-    aplicar_regla_1(Sudoku, 1, Posibilidades, [], [], []),
+    %aplicar_regla_1(Sudoku, 1, Posibilidades, [], [], []),
     aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku).
 
 % Predicado para aplicar la Regla 0 una vez
