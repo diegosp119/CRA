@@ -386,6 +386,11 @@ aplicar_regla_1(Sudoku, Indice_Regla1, Posibilidades, FilaUnicos, ColumnaUnicos,
 
 
 % Predicado para aplicar la Regla 0 y actualizar el Sudoku
+%FALTARIA UNIR CON REGLA 0
+resolver_regla_1(Sudoku, NuevoSudoku) :-
+    generar_posibilidades(Sudoku, Posibilidades),
+    aplicar_regla_1(Sudoku, 1, Posibilidades, [], [],[]).
+    
 resolver_regla_0(Sudoku, NuevoSudoku) :-
     generar_posibilidades(Sudoku, Posibilidades),
     %LLAMADAREGLA1
@@ -434,7 +439,8 @@ imprimir_lista_posibilidades :-
 %Predicado para probar la Regla 0
 probar_regla_0 :-
     sudoku(Tablero),
-    resolver_regla_0(Tablero, NuevoTablero). %ESTE PUNTO AQUI SOBRE RECUERDA
+    resolver_regla_1(Tablero, NuevoTablero). %ESTE PUNTO AQUI SOBRE RECUERDA
+    resolver_regla_0(Tablero, NuevoTablero), 
     imprimir_sudoku(NuevoTablero),
     generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
     imprimir_posibilidades(PosibilidadesActualizadas).
