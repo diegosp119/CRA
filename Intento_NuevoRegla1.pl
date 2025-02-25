@@ -390,6 +390,7 @@ aplicar_regla_1(Sudoku, Indice_Regla1, Posibilidades, FilaUnicos, ColumnaUnicos,
 %FALTARIA UNIR CON REGLA 0
 resolver_regla_1(Sudoku, NuevoSudoku) :-
     generar_posibilidades(Sudoku, Posibilidades),
+    writeln("Posibilidades: "), writeln(Posibilidades),
     aplicar_regla_1(Sudoku, 1, Posibilidades, [], [],[]).
     
 resolver_regla_0(Sudoku, NuevoSudoku) :-
