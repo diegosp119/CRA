@@ -257,3 +257,139 @@ probar_regla_0 :-
 
 
 
+
+
+
+
+%Cosas de la Regla 1
+
+
+% Caso base: cuando hemos procesado todas las casillas
+aplicar_regla_1(_, 82, _, FilaUnicos, ColumnaUnicos, CuadradoUnicos) :-
+    %writeln('Regla 1 aplicada con exito'),
+    writeln(FilaUnicos),
+    writeln(ColumnaUnicos),
+    writeln(CuadradoUnicos).
+
+% Caso recursivo: procesar cada casilla del Sudoku
+aplicar_regla_1(Sudoku, Indice_Regla1, Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos) :-
+    % Extrae de la lista Posibilidades el elemento en la posición Indice_Regla1
+    % ylo asigna a PosiblesValores
+    
+    
+    %writeln("Entrando en aplicar_regla_1 con índice: "), writeln(Indice_Regla1),
+    nth1(Indice_Regla1, Posibilidades, PosiblesValores),
+    
+
+    
+    %Determinar vecinos de la casilla (fila, columna y cuadrado), es decir el Indice siguiente es lo que saco con esto
+    %FILA
+    Indice_Sig_Fila is Indice_Regla1+1,
+    (Indice_Regla1 mod 3 =:= 0 ->
+        %implica que se tiene que hacer un salto de 7 números
+        Nuevo_Indice_Fila is Indice_Regla1 + 7
+    ;
+        %Si noes el caso nose hace nada
+        Nuevo_Indice_Fila = Indice_Sig_Fila
+    ),
+    %comprobamos ahora que nose haya salido de los limites
+    %primero que nosupere 81 la suma
+    (Nuevo_Indice_Fila > 81 ->
+        %Entonces se sale del espacio del sudokuy signfica que estamos en el ultimo elemento de la columna
+        Indice_Intermedio_Fila is Indice_Regla1 -1
+    ;
+        %No se sale del espacio del sudoku, nohace falta hacer nada
+        Indice_Intermedio_Fila = Nuevo_Indice_Fila
+    ),
+    %segundo que nocambie fila
+    Id_Fila_Sig is ((Indice_Intermedio_Fila//27) * 3 )+ ((Indice_Intermedio_Fila mod 9)//3),
+    Id_fila is ((Indice_Regla1//27) * 3 )+ ((Indice_Regla1 mod 9)//3),
+    (Id_Fila_Sig =\= Id_fila ->
+        % Si son distintos entonces estabamos en el limite del sudoku
+        Indice_Final_Fila is Indice_Regla1 - 1
+    ;
+        %No se hace nada
+        Indice_Final_Fila = Indice_Intermedio_Fila
+    ),
+    VecinosFila = Indice_Final_Fila,
+
+
+    %COLUMNA
+    Indice_Sig_Col is Indice_Regla1+3,
+    Id_Col_Sig is  (((Indice_Sig_Col//9) mod 3) * 3 )+ (Indice_Sig_Col mod 3),
+    Id_Col is (((Indice_Regla1//9) mod 3) * 3 )+ (Indice_Regla1 mod 3),
+    
+    % Comparar los índices de columna y ejecutar acciones
+    (Id_Col_Sig =\= Id_Col ->  
+        % Si son distintos, hacer una acción
+        %writeln('Los índices de columna son distintos'),  
+        Nuevo_Indice_Col is (9*2)+Indice_Regla1+3
+    ;  
+        % Si son iguales, nohace falta hacer nada
+        %writeln('Los índices de columna son iguales'),
+        Nuevo_Indice_Col=Indice_Sig_Col
+    ),
+    %Segunda comprobacion necesaria
+    (Nuevo_Indice_Col>81->
+            %Entonces se sale del espacio del sudokuy signfica que estamos en el ultimo elemento de la columna
+            Indice_Final_Col is Indice_Regla1-3-(9*2)
+        ;
+            %No se sale del espacio del sudoku, nohace falta hacer nada
+            Indice_Final_Col = Nuevo_Indice_Col
+    ),
+    VecinosColumna = Indice_Final_Col,
+
+    
+    %CUADRADO
+    Indice_Sig_Cuadrado is Indice_Regla1+1,
+    (Indice_Regla1 mod 9 =:= 0 ->
+        %Estoy en el final del cuadrado
+        Indice_Final_Cuadrado is Indice_Regla1-1
+    ;
+        %No pasa nada
+        Indice_Final_Cuadrado = Indice_Sig_Cuadrado
+
+    ),
+    VecinosCuadrado = Indice_Final_Cuadrado,
+    
+    % Extraer las posibilidades de los vecinos
+    nth1(VecinosFila, Posibilidades, PosibilidadesVecinosFila),
+    %writeln("Posibles Vecinos Fila: "), writeln(PosibilidadesVecinosFila),
+    nth1(VecinosColumna, Posibilidades, PosibilidadesVecinosColumna),
+    nth1(VecinosCuadrado, Posibilidades, PosibilidadesVecinosCuadrado),
+    
+    % Aquí debes implementar la lógica para encontrar valores únicos
+    % en la fila, columna y cuadrado.
+    % Por ahora, dejamos un marcador "_" indicando que no se ha calculado.
+    findall(Valor, (member(Valor, PosiblesValores), \+ member(Valor, PosibilidadesVecinosFila)), UnicoFila),
+    findall(Valor, (member(Valor, PosiblesValores), \+ member(Valor, PosibilidadesVecinosColumna)), UnicoColumna),
+    findall(Valor, (member(Valor, PosiblesValores), \+ member(Valor, PosibilidadesVecinosCuadrado)), UnicoCuadrado),
+
+    (UnicoFila = [] -> ValorUnicoFila = 0 ; [ValorUnicoFila|_] = UnicoFila),
+    (UnicoColumna = [] -> ValorUnicoColumna = 0 ; [ValorUnicoColumna|_] = UnicoColumna),
+    (UnicoCuadrado = [] -> ValorUnicoCuadrado = 0 ; [ValorUnicoCuadrado|_] = UnicoCuadrado),
+
+
+    % Actualizar las listas de resultados con los valores únicos encontrados
+    append(FilaUnicos, [UnicoFila], NuevaFilaUnicos),
+    append(ColumnaUnicos, [UnicoColumna], NuevaColumnaUnicos),
+    append(CuadradoUnicos, [UnicoCuadrado], NuevaCuadradoUnicos),
+
+    % Mostrar el contenido actualizado de las listas en cada iteración
+    writeln('Estado actual de NuevaFilaUnicos:'), writeln(NuevaFilaUnicos),
+    writeln('Estado actual de NuevaColumnaUnicos:'), writeln(NuevaColumnaUnicos),
+    writeln('Estado actual de NuevaCuadradoUnicos:'), writeln(NuevaCuadradoUnicos),
+    
+    % Llamada recursiva para la siguiente casilla
+    NuevoIndice is Indice_Regla1 + 1,
+    aplicar_regla_1(Sudoku, NuevoIndice, Posibilidades, NuevaFilaUnicos, NuevaColumnaUnicos, NuevaCuadradoUnicos).
+
+
+
+
+
+
+
+
+
+
