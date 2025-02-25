@@ -281,13 +281,13 @@ verificar_repetidos(Filas, Columnas, Cuadrados) :-
 %HAsta aquí es lo que queda por hacer
 
 
-actualizar_posibilidades_pareja(Posibilidades, Indice, VecinosFila, UnicoFila, NuevaPosibilidades) :-
+%actualizar_posibilidades_pareja(Posibilidades, Indice, VecinosFila, UnicoFila, NuevaPosibilidades) :-
     % Extraer los valores únicos
-    [ValorIndice, ValorVecino] = UnicoFila,
+    %[ValorIndice, ValorVecino] = UnicoFila,
 
-    % Verificar que los valores no sean vacíos antes de reemplazar
-    (ValorIndice \= [] -> replace(Posibilidades, Indice, ValorIndice, TempPos1) ; TempPos1 = Posibilidades),
-    (ValorVecino \= [] -> replace(TempPos1, VecinosFila, ValorVecino, NuevaPosibilidades) ; NuevaPosibilidades = TempPos1).
+    %Verificar que los valores no sean vacíos antes de reemplazar
+    %(ValorIndice \= [] -> replace(Posibilidades, Indice, ValorIndice, TempPos1) ; TempPos1 = Posibilidades),
+    %(ValorVecino \= [] -> replace(TempPos1, VecinosFila, ValorVecino, NuevaPosibilidades) ; NuevaPosibilidades = TempPos1).
 
 
 
@@ -299,8 +299,8 @@ aplicar_regla_1(_, 82, Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos)
     actualizar_posibilidades_con_unicos(Posibilidades, 1,FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades),
     %writeln("Posibilidades: "), writeln(Posibilidades),
     %writeln("Nuevas Posibilidades"), writeln(NuevaPosibilidades),
-    writeln("Posibilidades, Sudoku: "),imprimir_sudoku(Posibilidades),
-    writeln("Nuevas Posibilidades, Sudoku: "), imprimir_sudoku(NuevaPosibilidades).
+    writeln("Posibilidades"),writeln(Posibilidades),
+    writeln("Nuevas Posibilidades"), writeln(NuevaPosibilidades).
 
 
 % Caso recursivo: procesar cada casilla del Sudoku
@@ -500,7 +500,7 @@ imprimir_lista_posibilidades :-
 
 %Predicado para probar la Regla 0
 probar_regla_0 :-
-    sudoku(Tablero),
+    sudoku1(Tablero),
     resolver_regla_1(Tablero, NuevoTablero). %ESTE PUNTO AQUI SOBRE RECUERDA
     resolver_regla_0(Tablero, NuevoTablero), 
     imprimir_sudoku(NuevoTablero),
