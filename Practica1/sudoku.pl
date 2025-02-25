@@ -1,14 +1,14 @@
 % Representación del Sudoku como una lista de 81 elementos
-sudoku1([
-    ., ., 7, ., ., ., 8, ., .,
-    ., 4, 5, 7, 6, ., ., ., 2,
-    6, ., ., ., 4, ., 3, ., 5,
-    8, 6, ., 5, ., ., ., 4, .,
-    ., ., 3, 8, ., 4, ., 6, .,
-    7, 2, 6, 9, ., ., 8, 3, .,
-    ., 5, ., ., ., ., 4, 7, .,
-    7, ., 4, ., ., ., ., ., 6,
-    3, 4, ., ., 6, ., 6, 2, .]).
+sudoku1([., ., 6, ., ., 2, 3, ., 4,
+        9, ., 4, ., 7, 5, ., 8, 2,
+        ., ., ., 8, ., ., ., 6, 5,
+        ., 3, ., ., ., ., ., ., 4,
+        2, ., 4, ., ., ., 8, ., 3,
+        ., 4, ., 7, ., 5, ., ., .,
+        ., ., ., ., 6, ., ., ., 8,
+        7, ., ., 2, ., 4, 5, ., 3,
+        ., 3, 7, ., ., ., 6, ., 9]).
+
 
 sudoku([
     ., 8, ., 5, 7, 6, 2, ., .,
@@ -174,24 +174,26 @@ numeros_unicos(Tipo, Posibilidades, Index, UnicosPrevios, UnicosFinales) :-
     ;   Tipo = columna -> indices_columna(Index, Indices)
     ;   Tipo = cuadro -> indices_cuadro(Index, Indices)
     ),
-    
-    % Obtener las posibilidades de todas las casillas en la región correspondiente (fila, columna o cuadro)
-    findall(P, (member(I, Indices), I \= Index, nth0(I, Posibilidades, P)), PosibilidadesRegion),
+
+    % Obtener las posibilidades de todas las casillas en la región (excepto la casilla actual)
+    findall(P, (member(I, Indices), I \= Index, nth0(I, Posibilidades, P), P \= []), PosibilidadesRegion),
 
     % Aplanar la lista de listas en una sola
     flatten(PosibilidadesRegion, TodosNumerosRegion),
 
     % Obtener las posibilidades de la casilla en Index
     nth0(Index, Posibilidades, PosibilidadesCasilla),
+    PosibilidadesCasilla \= [],  % Asegurar que no es una casilla ya resuelta
 
     % Filtrar los números que NO se repiten en la región
     findall(Num, 
-        (member(Num, PosibilidadesCasilla), \+ member(Num, TodosNumerosRegion)), 
+        (member(Num, PosibilidadesCasilla), \+ memberchk(Num, TodosNumerosRegion)), 
         UnicosNuevos
     ),
 
     % Unir los nuevos únicos con los previos
     append(UnicosPrevios, UnicosNuevos, UnicosFinales).
+
 
 %Función creada para comprobar que funciona individualmente para cada casilla
 %la detección de posibilidades no repetidas en una misma fila, columna o cuadro
@@ -223,18 +225,19 @@ aplicar_regla_1(Sudoku, Posibilidades, NuevoPosibilidades) :-
 % Caso base: cuando hemos revisado todas las casillas (81 en total)
 aplicar_regla_1_aux(_, [], 81, []).
 
-% Caso recursivo: revisar cada casilla y aplicar la regla 1 si se cumple la condición
+% Caso recursivo: revisar cada casilla y aplicar la Regla 1 si se cumple la condición
 aplicar_regla_1_aux(Sudoku, [P|Ps], Index, [NuevoP|NuevoPs]) :-
     (   P \= [],  % Si la casilla tiene posibilidades (no está ya resuelta)
         numeros_unicos(fila, Posibilidades, Index, [], UnicosFila),
         numeros_unicos(columna, Posibilidades, Index, UnicosFila, UnicosColumna),
         numeros_unicos(cuadro, Posibilidades, Index, UnicosColumna, UnicosFinales),
-        UnicosFinales = [Num, Num, Num]  % Verificar que los tres valores sean iguales
+        UnicosFinales = [Num|_]  % Si al menos un número es único en fila, columna o cuadro
     ->  NuevoP = [Num]  % Se sustituye por ese número
-    ;   NuevoP = []  % Si no cumple la condición, se vacía la lista de únicos
+    ;   NuevoP = P  % Si no cumple la condición, se mantiene la lista de posibilidades
     ),
     NextIndex is Index + 1,
     aplicar_regla_1_aux(Sudoku, Ps, NextIndex, NuevoPs).
+
 
 % Predicado para aplicar las reglas 0 y 1 iterativamente hasta que el Sudoku ya no cambie
 resolver_sudoku(Sudoku, SudokuFinal) :-
@@ -246,11 +249,13 @@ iterar_reglas(Sudoku, Posibilidades, SudokuFinal) :-
     aplicar_regla_1(Sudoku, Posibilidades, Posibilidades1),
     actualizar_sudoku(Sudoku, Posibilidades1, Sudoku1),
     resolver_regla_0(Sudoku1, Sudoku2),
-    (   Sudoku \= Sudoku2  % Si hubo cambios, seguimos iterando
+    (   Sudoku \= Sudoku2, % Si hubo cambios, seguimos iterando
+        length(Sudoku, L1), length(Sudoku2, L2), L1 =\= L2
     ->  generar_posibilidades(Sudoku2, NuevasPosibilidades),
         iterar_reglas(Sudoku2, NuevasPosibilidades, SudokuFinal)
-    ;   SudokuFinal = Sudoku  % Si no hubo cambios, terminamos
+    ;   SudokuFinal = Sudoku2  % Si no hubo cambios, terminamos
     ).
+
 
 % Predicado para probar la solución completa
 probar_resolucion :-
