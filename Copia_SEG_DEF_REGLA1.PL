@@ -22,17 +22,6 @@ sudoku([
     ., 4, ., ., ., ., ., ., 6
 ]).
 
-sudoku2([5, 3, ., ., 7, ., ., ., .,
-        6, ., ., 1, 9, 5, ., ., .,
-        1, 9, 8, ., ., ., ., 6, .,
-        8, ., ., ., 6, ., ., ., 3,
-        4, ., ., 8, ., 3, ., ., 1,
-        7, ., ., ., 2, ., ., ., 6,
-        ., 6, ., ., ., ., 2, 8, .,
-        ., ., ., 4, 1, 9, ., ., 5,
-        ., ., ., ., 8, ., ., 7, 9
-]).
-
 
 indice_filas([1,2,3,10,11,12,19,20,21,4,5,6,13,14,15,22,23,24,7,8,9,16,17,18,25,26,27,28,29,30,37,38,39,46,47,48,31,32,33,40,41,42,49,50,51,34,35,36,43,44,45,52,53,54,55,56,57,64,65,66,73,74,75,58,59,60,67,68,69,76,77,78,61,62,63,70,71,72,79,80,81]).
 
@@ -369,19 +358,21 @@ aplicar_regla_1(Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos,FilaDef
 
 % Predicado para aplicar la Regla 0 y actualizar el Sudoku
 %FALTARIA UNIR CON REGLA 0
-resolver_regla_1(Sudoku, NuevoSudoku, Posibilidades, Fin) :-
-    %generar_posibilidades(Sudoku, Posibilidades),
+resolver_regla_1(Sudoku, NuevoSudoku) :-
+    generar_posibilidades(Sudoku, Posibilidades),
     ajuste_de_posibilidades(Posibilidades, PosibilidadesAjustadas),
     writeln("Posibilidades: "), writeln(Posibilidades),
     aplicar_regla_1(PosibilidadesAjustadas, FilaUnicos, ColumnaUnicos, CuadradoUnicos,FilaDef, ColumnaDef, Cuadrados_Def, NuevaPosibilidades),
     ajuste_de_posibilidades(NuevaPosibilidades, Fin),
-    writeln(" Posibilidades Depuradas: "), writeln(Fin).
+    writeln(" Posibilidades Depuradas: "), writeln(Fin),
+    actualizar_sudoku(Sudoku, Fin, NuevoSudoku),
+    imprimir_sudoku(NuevoSudoku).
     
 resolver_regla_0(Sudoku, NuevoSudoku) :-
     generar_posibilidades(Sudoku, Posibilidades),
     %LLAMADAREGLA1
-    resolver_regla_1(Sudoku, NuevoSudoku, Posibilidades, Fin),
-    aplicar_regla_0(Sudoku, Fin, NuevoSudoku).
+    %aplicar_regla_1(Sudoku, 1, Posibilidades, [], [], []),
+    aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku).
 
 % Predicado para aplicar la Regla 0 una vez
 aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku) :-
@@ -424,8 +415,8 @@ imprimir_lista_posibilidades :-
 
 %Predicado para probar la Regla 0
 probar_regla_0 :-
-    sudoku2(Tablero),
-    %resolver_regla_1(Tablero, NuevoTablero). %ESTE PUNTO AQUI SOBRE RECUERDA
+    sudoku(Tablero),
+    resolver_regla_1(Tablero, NuevoTablero). %ESTE PUNTO AQUI SOBRE RECUERDA
     resolver_regla_0(Tablero, NuevoTablero), 
     imprimir_sudoku(NuevoTablero),
     generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
