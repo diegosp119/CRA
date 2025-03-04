@@ -338,93 +338,34 @@ eliminar_repetidos_de_las_listas([Lista|Rest], Indice, Valores, Def, Lista_Defin
     eliminar_repetidos_de_las_listas(Rest, Nuevo_Indice, Valores, DefActualizado, Lista_Definitiva).
 
 
-actualizar_posibilidades_cuadrado(Posibilidades, 82,_,_,_, NuevaPosibilidades):-
-     % Recorrer todas las casillas del Sudoku (de 1 a 81)
-    writeln("Llego al fin del sudoku"),
-    NuevaPosibilidades = Posibilidades,
-    writeln("NuevaPosibilidades: "), writeln(NuevaPosibilidades).
-
-
-actualizar_posibilidades_cuadrado(Posibilidades, Indice, FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades):-
-    % Extraer el valor de las posibles posibilidades en el índice actual
-    nth1(Indice, Posibilidades, ListaPosibilidades),
-    
-    % Comprobar si hay un valor único en FilaUnicos, ColumnaUnicos o CuadradoUnicos
-    (   nth1(Indice, CuadradoUnicos, ValorUnicoCuadrado),
-        ValorUnicoCuadrado = [X]  % Solo si tiene exactamente un elemento y no está vacía
-        ->  Reemplazo = [X]
-        % Reemplazar el valor en la lista de Posibilidades
-        replace(Posibilidades, Indice, Reemplazo, NuevaPosibilidadesParcial),
-
-        % Llamada recursiva para procesar el siguiente índice
-        IndiceSiguiente is Indice + 1,
-        actualizar_posibilidades_cuadrado(NuevaPosibilidadesParcial,IndiceSiguiente ,FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades)
-    ;
-        IndiceSiguiente is Indice + 1,
-        actualizar_posibilidades_cuadrado(NuevaPosibilidadesParcial,IndiceSiguiente ,FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades).
-    )
-
-
-
-actualizar_posibilidades_columna(Posibilidades, 82,_,_,_, NuevaPosibilidades):-
-     % Recorrer todas las casillas del Sudoku (de 1 a 81)
-    writeln("Llego al fin del sudoku"),
-    NuevaPosibilidades = Posibilidades,
-    %writeln("NuevaPosibilidades: "), writeln(NuevaPosibilidades).
-
-
-actualizar_posibilidades_columna(Posibilidades, Indice, FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades):-
-    % Extraer el valor de las posibles posibilidades en el índice actual
-    nth1(Indice, Posibilidades, ListaPosibilidades),
-    
-    % Comprobar si hay un valor único en FilaUnicos, ColumnaUnicos o CuadradoUnicos
-    (   nth1(Indice, CuadradoUnicos, ValorUnicoCuadrado),
-        ValorUnicoCuadrado = [X]  % Solo si tiene exactamente un elemento y no está vacía
-        ->  Reemplazo = [X]
-         % Reemplazar el valor en la lista de Posibilidades
-        replace(Posibilidades, Indice, Reemplazo, NuevaPosibilidadesParcial),
-
-        % Llamada recursiva para procesar el siguiente índice
-        IndiceSiguiente is Indice + 1,
-        actualizar_posibilidades_columna(NuevaPosibilidadesParcial,IndiceSiguiente ,FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades)
-    ;
-        % Llamada recursiva para procesar el siguiente índice
-        IndiceSiguiente is Indice + 1,
-        actualizar_posibilidades_columna(NuevaPosibilidadesParcial,IndiceSiguiente ,FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades)
-
-    )
-
-
 % Función que actualiza las posibilidades de acuerdo a los valores únicos
-actualizar_posibilidades_con_unicos(Posibilidades, 82,_,_,_, NuevaPosibilidades) :-
+actualizar_posibilidades_con_unicos(Posibilidades, 82,_,Posibilidades_Fin) :-
     % Recorrer todas las casillas del Sudoku (de 1 a 81)
-    writeln("Llego al fin del sudoku para las filas"),
-    Temp1=Posibilidades,
-    %writeln("NuevaPosibilidades: "), writeln(NuevaPosibilidades),
-    actualizar_posibilidades_columna(Temp1, 1, FilaUnicos, ColumnaUnicos, CuadradoUnicos,NuevaPosibilidades),
-    Temp2 = Temp1,
-    actualizar_posibilidades_cuadrado(Temp2, 1, FilaUnicos, ColumnaUnicos, CuadradoUnicos,NuevaPosibilidades),
-    NuevaPosibilidades=Temp2.
+    Posibilidades_Fin=Posibilidades.
 
 % Caso recursivo: procesar una casilla y actualizarla si corresponde
-actualizar_posibilidades_con_unicos(Posibilidades, Indice, FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades) :-
+actualizar_posibilidades_con_unicos(Posibilidades, Indice, Unicos, Posibilidades_Fin) :-
     % Extraer el valor de las posibles posibilidades en el índice actual
     nth1(Indice, Posibilidades, ListaPosibilidades),
+    %writeln("ListaPosibilidades"), writeln(ListaPosibilidades),
     % Comprobar si hay un valor único en FilaUnicos, ColumnaUnicos o CuadradoUnicos
-    (   nth1(Indice, FilaUnicos, ValorUnicoFila),
-        ValorUnicoFila = [X]  % Solo si tiene exactamente un elemento y no está vacía
+    (   nth1(Indice, Unicos, ValorUnicos),
+        ValorUnicos = [X]  % Solo si tiene exactamente un elemento y no está vacía
         ->  Reemplazo = [X],
         % Reemplazar el valor en la lista de Posibilidades
         replace(Posibilidades, Indice, Reemplazo, NuevaPosibilidadesParcial),
 
         % Llamada recursiva para procesar el siguiente índice
         IndiceSiguiente is Indice + 1,
-        actualizar_posibilidades_con_unicos(NuevaPosibilidadesParcial,IndiceSiguiente ,FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades)
+        actualizar_posibilidades_con_unicos(NuevaPosibilidadesParcial,IndiceSiguiente ,Unicos,Posibilidades_Fin)
     ;
         % Llamada recursiva para procesar el siguiente índice
+        Reemplazo = ListaPosibilidades,
+        replace(Posibilidades, Indice, Reemplazo, NuevaPosibilidadesParcial),
         IndiceSiguiente is Indice + 1,
-        actualizar_posibilidades_con_unicos(NuevaPosibilidadesParcial,IndiceSiguiente ,FilaUnicos, ColumnaUnicos, CuadradoUnicos, NuevaPosibilidades)
+        actualizar_posibilidades_con_unicos(NuevaPosibilidadesParcial,IndiceSiguiente ,Unicos,Posibilidades_Fin)
     ).
+
 
 % Función principal para iniciar la comparación
 verificar_repetidos(Filas, Columnas, Cuadrados, Valores, FilaDef, ColumnaDef, Cuadrados_Def) :-
@@ -458,19 +399,24 @@ verificar_repetidos(Filas, Columnas, Cuadrados, Valores, FilaDef, ColumnaDef, Cu
 
 % Caso base: cuando hemos procesado todas las casillas
 aplicar_regla_1(Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos,FilaDef, ColumnaDef, Cuadrados_Def, NuevaPosibilidades) :-
-    writeln("Regla 1 aplicada con exito"),
-    writeln("ColumnaUnicos: "), writeln(ColumnaUnicos),
     verificar_repetidos(FilaUnicos, ColumnaUnicos, CuadradoUnicos, Posibilidades, FilaDef, ColumnaDef, Cuadrados_Def),
-    writeln(FilaDef),
-    writeln(ColumnaDef),
-    writeln(Cuadrados_Def),
-    
 
-    actualizar_posibilidades_con_unicos(Posibilidades, 1,FilaDef, ColumnaDef, Cuadrados_Def, NuevaPosibilidades),
-    %writeln("Posibilidades: "), writeln(Posibilidades),
-    %writeln("Nuevas Posibilidades"), writeln(NuevaPosibilidades),
-    writeln("Posibilidades, Sudoku: "),imprimir_sudoku(Posibilidades),
-    writeln("Nuevas Posibilidades, Sudoku: "), imprimir_sudoku(NuevaPosibilidades).
+    Posibilidades_Originales=Posibilidades,
+
+    actualizar_posibilidades_con_unicos(Posibilidades, 1,FilaDef, Temp1),
+    
+    (Posibilidades_Originales\==Temp1
+    -> NuevaPosibilidades=Temp1
+    ;
+        Temp1_Original=Temp1,
+        actualizar_posibilidades_con_unicos(Temp1, 1, ColumnaDef, Temp2),
+        (Temp1_Original\==Temp2
+        -> NuevaPosibilidades=Temp2
+        ;
+        actualizar_posibilidades_con_unicos(Temp2, 1,Cuadrados_Def, NuevaPosibilidades)
+        )
+
+    ).
 
 
 % Predicado para aplicar la Regla 0 y actualizar el Sudoku
