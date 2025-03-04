@@ -603,15 +603,14 @@ eliminar_pares_de_indices(Posibilidades, [Indice|RestoIndices], ParesUnicos, Nue
 % Predicado para eliminar pares de una posibilidad
 eliminar_pares_de_posibilidad(Posibilidad, [], Posibilidad).
 eliminar_pares_de_posibilidad(Posibilidad, [[Num1, Num2]|RestoPares], NuevaPosibilidad) :-
-    % Si la posibilidad actual no es uno de los pares únicos, elimina los números del par
-    (   member(Num1, Posibilidad) -> 
-        eliminar_numero(Posibilidad, Num1, TempPosibilidad),
-        eliminar_pares_de_posibilidad(TempPosibilidad, [[Num1, Num2]|RestoPares], NuevaPosibilidad)
-    ;   member(Num2, Posibilidad) ->
-        eliminar_numero(Posibilidad, Num2, TempPosibilidad),
-        eliminar_pares_de_posibilidad(TempPosibilidad, [[Num1, Num2]|RestoPares], NuevaPosibilidad)
-    ;   eliminar_pares_de_posibilidad(Posibilidad, RestoPares, NuevaPosibilidad)
+    % Si la posibilidad actual es uno de los pares únicos, no eliminar los números del par
+    (   length(Posibilidad, 2), member(Num1, Posibilidad), member(Num2, Posibilidad) ->
+        eliminar_pares_de_posibilidad(Posibilidad, RestoPares, NuevaPosibilidad)
+    ;   eliminar_numero(Posibilidad, Num1, TempPosibilidad1),
+        eliminar_numero(TempPosibilidad1, Num2, TempPosibilidad2),
+        eliminar_pares_de_posibilidad(TempPosibilidad2, RestoPares, NuevaPosibilidad)
     ).
+
 
 % Predicado para eliminar un número de una lista
 eliminar_numero([], _, []).
