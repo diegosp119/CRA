@@ -453,11 +453,6 @@ aplicar_regla_1(Sudoku, Indice_Regla1, Posibilidades, FilaUnicos, ColumnaUnicos,
 
 
 
-
-
-
-
-
 % Predicado para aplicar la Regla 0 y actualizar el Sudoku
 %FALTARIA UNIR CON REGLA 0
 resolver_regla_1(Sudoku, NuevoSudoku) :-
