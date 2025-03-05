@@ -106,6 +106,7 @@ sudoku8([
 indice_filas([1,2,3,10,11,12,19,20,21,4,5,6,13,14,15,22,23,24,7,8,9,16,17,18,25,26,27,28,29,30,37,38,39,46,47,48,31,32,33,40,41,42,49,50,51,34,35,36,43,44,45,52,53,54,55,56,57,64,65,66,73,74,75,58,59,60,67,68,69,76,77,78,61,62,63,70,71,72,79,80,81]).
 
 
+
 % Predicado para imprimir el tablero de Sudoku
 imprimir_sudoku([]).
 imprimir_sudoku(Tablero) :-
@@ -123,6 +124,28 @@ tomar(N, [H|T], [H|R], Resto) :-
     N > 0,
     N1 is N - 1,
     tomar(N1, T, R, Resto).
+
+% -------------------------------
+% Predicados Auxiliares
+% -------------------------------
+
+% Dividir el tablero en filas (9 elementos cada una).
+filas_sudoku([], []).
+filas_sudoku(Sudoku, [Fila|Filas]) :-
+    tomar(9, Sudoku, Fila, Resto),
+    filas_sudoku(Resto, Filas).
+
+% Predicado para saltar N elementos en una lista.
+skip(0, L, L).
+skip(N, [_|T], Rest) :-
+    N > 0,
+    N1 is N - 1,
+    skip(N1, T, Rest).
+
+% Predicado para extraer una sublista (slicing): desde la posición Start, Count elementos.
+slice(List, Start, Count, Slice) :-
+    skip(Start, List, Rest),
+    tomar(Count, Rest, Slice, _).
 
 % Hechos
 numero(1).
@@ -151,18 +174,33 @@ miembro_columna(Sudoku, Index, Num) :-
     I is Fila * 9 + Columna,
     nth0(I, Sudoku, Num).
 
-% Predicado para verificar si un número está en el mismo cuadro 3x3
+% -------------------------------
+% Predicado para Verificar el Cuadrante (3x3) por Slicing
+% -------------------------------
+
 miembro_cuadro(Sudoku, Index, Num) :-
-    Fila is Index // 9,
-    Columna is Index mod 9,
-    CuadroFila is (Fila // 3) * 3,
-    CuadroColumna is (Columna // 3) * 3,
-    FInicio is CuadroFila * 9 + CuadroColumna,
-    FFin is FInicio + 2,
-    CInicio is CuadroFila * 9 + CuadroColumna + 18,
-    CFin is CInicio + 2,
-    (between(FInicio, FFin, I); between(CInicio, CFin, I)),
-    nth0(I, Sudoku, Num).
+    % Cálculo de fila y columna del elemento (0-based)
+    Row is Index // 9,
+    Col is Index mod 9,
+    % Determinar el inicio (cabezera) del bloque 3×3
+    RowStart is (Row // 3) * 3,
+    ColStart is (Col // 3) * 3,
+    % Convertir el tablero en una lista de filas
+    filas_sudoku(Sudoku, Filas),
+    % Extraer las 3 filas que componen el bloque:
+    nth0(RowStart, Filas, Fila1),
+    Row2 is RowStart + 1,
+    nth0(Row2, Filas, Fila2),
+    Row3 is RowStart + 2,
+    nth0(Row3, Filas, Fila3),
+    % Extraer el segmento de cada fila correspondiente al bloque (3 celdas)
+    slice(Fila1, ColStart, 3, Seccion1),
+    slice(Fila2, ColStart, 3, Seccion2),
+    slice(Fila3, ColStart, 3, Seccion3),
+    % Unir las secciones en una lista con todas las celdas del cuadrante
+    append([Seccion1, Seccion2, Seccion3], Cuadro),
+    % Verificar si el número ya se encuentra en ese bloque
+    member(Num, Cuadro).
 
 % Predicado para verificar si una casilla está vacía
 casilla_vacia(Casilla) :-
