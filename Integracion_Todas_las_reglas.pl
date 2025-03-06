@@ -232,7 +232,6 @@ imprimir_posibilidades([P|Ps]) :-
     imprimir_posibilidades(Ps).
 
 
-%NO SE ESTA USANDO ESTO DE AJUSTE 
 % Predicado para ajustar las posibilidades según el nuevo índice
 ajuste_de_posibilidades(Posibilidades, PosibilidadesAjustadas) :-
     indice_filas(Indice_Filas),
@@ -240,6 +239,9 @@ ajuste_de_posibilidades(Posibilidades, PosibilidadesAjustadas) :-
     length(Posibilidades, Len),
     length(PosibilidadesAjustadas, Len),
     ajuste_de_posibilidades(Posibilidades, Indice_Filas, PosibilidadesAjustadas).
+
+
+
 
 %caso base de ajuste de posibilidades
 ajuste_de_posibilidades([], [], PosibilidadesAjustadas).
@@ -253,191 +255,174 @@ ajuste_de_posibilidades([P|Ps], [NuevaPosicion|Indice_Filas], PosibilidadesAjust
 
 
 
-%Cosas de la Regla 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- REGLA 1 ---
 
 
+% Predicado principal
+aplicar_regla_1(Posibilidades, NuevaPosibilidades) :-
+    aplicar_regla_1_a_todas_filas(Posibilidades, Temp1),
+    aplicar_regla_1_a_todas_columnas(Temp1, Temp2),
+    aplicar_regla_1_a_todos_cuadros(Temp2, NuevaPosibilidades).
 
 
-% Reemplazar un elemento en una lista en una posición dada
+% Regla sobre filas
+
+aplicar_regla_1_a_todas_filas(Posibilidades, NuevaPosibilidades) :-
+    aplicar_regla_1_a_todas_filas(Posibilidades, 1, NuevaPosibilidades).
+
+aplicar_regla_1_a_todas_filas(Posibilidades, 10, Posibilidades).
+aplicar_regla_1_a_todas_filas(Posibilidades, Fila, NuevaPosibilidades) :-
+    obtener_posibilidades_fila(Posibilidades, Fila, PosFila),
+    encontrar_determinados(PosFila, Determinados),
+    eliminar_determinados_de_fila(Posibilidades, Fila, Determinados, TempPosib),
+    FilaSiguiente is Fila + 1,
+    aplicar_regla_1_a_todas_filas(TempPosib, FilaSiguiente, NuevaPosibilidades).
+
+
+% Regla sobre columnas
+
+aplicar_regla_1_a_todas_columnas(Posibilidades, NuevaPosibilidades) :-
+    aplicar_regla_1_a_todas_columnas(Posibilidades, 1, NuevaPosibilidades).
+
+aplicar_regla_1_a_todas_columnas(Posibilidades, 10, Posibilidades).
+aplicar_regla_1_a_todas_columnas(Posibilidades, Columna, NuevaPosibilidades) :-
+    obtener_posibilidades_columna(Posibilidades, Columna, PosCol),
+    encontrar_determinados(PosCol, Determinados),
+    eliminar_determinados_de_columna(Posibilidades, Columna, Determinados, TempPosib),
+    ColumnaSiguiente is Columna + 1,
+    aplicar_regla_1_a_todas_columnas(TempPosib, ColumnaSiguiente, NuevaPosibilidades).
+
+
+% Regla sobre cuadros (bloques 3x3)
+
+aplicar_regla_1_a_todos_cuadros(Posibilidades, NuevaPosibilidades) :-
+    aplicar_regla_1_a_todos_cuadros(Posibilidades, 1, NuevaPosibilidades).
+
+aplicar_regla_1_a_todos_cuadros(Posibilidades, 10, Posibilidades).
+aplicar_regla_1_a_todos_cuadros(Posibilidades, Cuadro, NuevaPosibilidades) :-
+    obtener_posibilidades_cuadro(Posibilidades, Cuadro, PosC),
+    encontrar_determinados(PosC, Determinados),
+    eliminar_determinados_de_cuadro(Posibilidades, Cuadro, Determinados, TempPosib),
+    CuadroSiguiente is Cuadro + 1,
+    aplicar_regla_1_a_todos_cuadros(TempPosib, CuadroSiguiente, NuevaPosibilidades).
+
+
+% Extraer de un grupo (lista de celdas) los números ya determinados
+
+encontrar_determinados(PosibilidadesGrupo, Determinados) :-
+    findall(Num, (member(P, PosibilidadesGrupo), length(P, 1), P = [Num]), Determinados).
+
+
+% Eliminación de determinados en grupo (fila, columna o cuadro)
+
+eliminar_determinados_de_fila(Posibilidades, Fila, Determinados, NuevaPosibilidades) :-
+    Inicio is (Fila - 1) * 9 + 1,
+    Fin is Fila * 9,
+    findall(Index, between(Inicio, Fin, Index), Indices),
+    eliminar_determinados_de_indices(Posibilidades, Indices, Determinados, NuevaPosibilidades).
+
+eliminar_determinados_de_columna(Posibilidades, Columna, Determinados, NuevaPosibilidades) :-
+    findall(Index, (between(0,8,I), Index is Columna + I * 9), Indices),
+    eliminar_determinados_de_indices(Posibilidades, Indices, Determinados, NuevaPosibilidades).
+
+eliminar_determinados_de_cuadro(Posibilidades, Cuadro, Determinados, NuevaPosibilidades) :-
+    CuadroFila is ((Cuadro - 1) // 3) * 3,
+    CuadroColumna is ((Cuadro - 1) mod 3) * 3,
+    findall(Index,
+            (between(0,2,I), between(0,2,J),
+             Index is (CuadroFila + I) * 9 + CuadroColumna + J + 1
+            ), Indices),
+    eliminar_determinados_de_indices(Posibilidades, Indices, Determinados, NuevaPosibilidades).
+
+eliminar_determinados_de_indices(Posibilidades, [], _, Posibilidades).
+eliminar_determinados_de_indices(Posibilidades, [Indice|RestoIndices], Determinados, FinalPosibilidades) :-
+    nth1(Indice, Posibilidades, PosActual),
+    eliminar_determinados_de_posibilidad(PosActual, Determinados, PosModificada),
+    replace(Posibilidades, Indice, PosModificada, PosTemp),
+    eliminar_determinados_de_indices(PosTemp, RestoIndices, Determinados, FinalPosibilidades).
+
+eliminar_determinados_de_posibilidad(Poss, Determinados, PossFinal) :-
+    (   length(Poss, 1)
+    ->  PossFinal = Poss
+    ;   eliminar_elementos(Poss, Determinados, PossFinal)
+    ).
+
+eliminar_elementos(Poss, [], Poss).
+eliminar_elementos(Poss, [D|Ds], PossFinal) :-
+    delete(Poss, D, PossTemp),
+    eliminar_elementos(PossTemp, Ds, PossFinal).
+
+
+% Predicado auxiliar: replace( Lista, Indice, NuevoElem, NuevaLista)
+
 replace([_|T], 1, X, [X|T]).
-replace([H|T], N, X, [H|R]) :- N > 1, N1 is N - 1, replace(T, N1, X, R).
+replace([H|T], I, X, [H|R]) :-
+    I > 1,
+    I1 is I - 1,
+    replace(T, I1, X, R).
 
 
+% Predicados para obtener las posibilidades de una fila, columna o cuadro
 
+obtener_posibilidades_fila(Posibilidades, Fila, Resultado) :-
+    filas_sudoku(Posibilidades, Filas),
+    nth1(Fila, Filas, Resultado).
 
+obtener_posibilidades_columna(Posibilidades, Columna, Resultado) :-
+    findall(Elem,
+            ( between(0,8,I),
+              Index is Columna + I * 9,
+              nth1(Index, Posibilidades, Elem)
+            ),
+            Resultado).
 
-%Desde Aqui es lo que queda hacer
+obtener_posibilidades_cuadro(Posibilidades, Cuadro, Resultado) :-
+    CuadroFila is ((Cuadro - 1) // 3) * 3,
+    CuadroColumna is ((Cuadro - 1) mod 3) * 3,
+    findall(Elem,
+            ( between(0,2,I), between(0,2,J),
+              Index is (CuadroFila + I) * 9 + CuadroColumna + J + 1,
+              nth1(Index, Posibilidades, Elem)
+            ),
+            Resultado).
 
-% Obtener los valores correspondientes a los índices dados en la lista de valores
-obtener_valores_por_indices([], _, []).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Prueba de Regla 1
 
-obtener_valores_por_indices([I|RestIndices], Lista_Original, [Valor|ValoresRestantes]) :-
-    nth1(I, Lista_Original, Valor), % Extrae el valor en la posición I de Lista_Original
-    obtener_valores_por_indices(RestIndices, Lista_Original, ValoresRestantes), % Continúa con el resto de índices
-    writeln(Valor).
-
-% Regla para incrementar el conteo de un número si ya está en la lista
-incrementar_conteo(H, [H-N|Resto], [H-N1|Resto]) :-
-    N1 is N + 1.
-
-% Si el número no es el actual, seguimos buscando en la lista
-incrementar_conteo(H, [X|Resto], [X|NuevoResto]) :-
-    incrementar_conteo(H, Resto, NuevoResto).
-
-
-% Si el número no está en la lista, lo agregamos con un conteo de 1
-incrementar_conteo(H, [], [H-1]).
-
-agregar_conteo([], Conteo, Conteo).
-
-agregar_conteo([H|T], ConteoPrevio, ConteoFinal) :-
-    incrementar_conteo(H, ConteoPrevio, ConteoActualizado),
-    agregar_conteo(T, ConteoActualizado, ConteoFinal).
-
-
-
-
-% Contar la cantidad de veces que aparece cada número en todas las listas
-contar_ocurrencias([], []).
-contar_ocurrencias([Lista|Resto], ConteoTotal) :-
-    contar_ocurrencias(Resto, ConteoParcial),
-    agregar_conteo(Lista, ConteoParcial, ConteoTotal).
-
-
-
-% Filtrar una lista dejando solo los elementos que aparecen una sola vez en todas las listas
-filtrar_unicos([], _, []).
-filtrar_unicos([H|T], Conteo, [H|Rest]) :-
-    member(H-1, Conteo), % Solo dejamos elementos que aparecen exactamente una vez en la lista completa
-    filtrar_unicos(T, Conteo, Rest).
-filtrar_unicos([_|T], Conteo, Rest) :-
-    filtrar_unicos(T, Conteo, Rest).
-
-% Aplicar el filtrado a todas las sublistas
-eliminar_repetidos_global([], _, []).
-eliminar_repetidos_global([Lista|Resto], Conteo, [ListaFiltrada|RestoFiltrado]) :-
-    filtrar_unicos(Lista, Conteo, ListaFiltrada),
-    %writeln("Lista Filtrada: "), writeln(ListaFiltrada),
-    eliminar_repetidos_global(Resto, Conteo, RestoFiltrado).
-
-% Predicado principal para limpiar la lista de repetidos globales
-eliminar_repetidos(Listas, Resultado) :-
+probar_regla_1 :-
+    sudoku6(Tablero),
+    generar_posibilidades(Tablero, Posibilidades),
+    writeln("Posibilidades iniciales:"),
+    imprimir_sudoku(Posibilidades),
+    writeln("Aplicando Regla 3..."),
+    aplicar_regla_3(Posibilidades, NuevaPosibilidades),
     
-    contar_ocurrencias(Listas, Conteo),
-    eliminar_repetidos_global(Listas, Conteo, Resultado).
+    imprimir_sudoku(NuevaPosibilidades),
+    writeln("Posibilidades despues de aplicar la Regla 1 por primera vez:"),
+    aplicar_regla_1(NuevaPosibilidades, NuevaPosibilidades2),
+    imprimir_sudoku(NuevaPosibilidades2),
+    writeln("Posibilidades despues de aplicar la Regla 1 por segunda vez:"),
+    aplicar_regla_1(NuevaPosibilidades2, NuevaPosibilidades3),
+    imprimir_sudoku(NuevaPosibilidades3),
+    writeln("Posibilidades despues de aplicar la Regla 1 por tercera vez:"),
+    aplicar_regla_1(NuevaPosibilidades3, NuevaPosibilidades4),
+    imprimir_sudoku(NuevaPosibilidades4),
+    %%%%%%%%%%%%%%%%%%
 
+    %CREAR FORMA DE DETECTAR QUE 2 LISTAS DE POSIBILIDADES SON IGUALES PARA NO HACER ITERACIONES DE MAS O DE MENOS
 
+    %%%%%%%%%%%%%%%%%
 
-
-
-
-% Eliminar repetidos dentro de las listas de filas, columnas y cuadrados
-eliminar_repetidos_de_las_listas(_,10, _,Def, Lista_Definitiva):-
-    Lista_Definitiva = Def.
-    
-eliminar_repetidos_de_las_listas([Lista|Rest], Indice, Valores, Def, Lista_Definitiva) :-
-    % Acceder a los valores de la lista a través de los índices
-   
-    obtener_valores_por_indices(Lista, Valores, Valores_Extraidos),
-   
-
-   
-    eliminar_repetidos(Valores_Extraidos, ListaSinRepetidos),
-    
-    % Mostrar la lista sin repetidos
-    %writeln('Lista sin repetidos:'),
-    writeln(ListaSinRepetidos),
-
-    % Agregar los valores de ListaSinRepetidos a Def
-    append(Def, ListaSinRepetidos, DefActualizado),
-
-    % Imprimir la lista de acumulación
-    %writeln('Def actualizada:'),
-    writeln(DefActualizado),
-
-    %CONTROLCHECKHASTAAQUI
-    Nuevo_Indice is Indice + 1,
-    % Continuar con las siguientes listas
-    eliminar_repetidos_de_las_listas(Rest, Nuevo_Indice, Valores, DefActualizado, Lista_Definitiva).
-
-
-
-
-
-
-
-% Función que actualiza las posibilidades de acuerdo a los valores únicos
-actualizar_posibilidades_con_unicos(Posibilidades, 82,_,Posibilidades_Fin) :-
-    % Recorrer todas las casillas del Sudoku (de 1 a 81)
-    Posibilidades_Fin=Posibilidades.
-
-% Caso recursivo: procesar una casilla y actualizarla si corresponde
-actualizar_posibilidades_con_unicos(Posibilidades, Indice, Unicos, Posibilidades_Fin) :-
-    % Extraer el valor de las posibles posibilidades en el índice actual
-    nth1(Indice, Posibilidades, ListaPosibilidades),
-    % Comprobar si hay un valor único en FilaUnicos, ColumnaUnicos o CuadradoUnicos
-    (   nth1(Indice, Unicos, ValorUnicos),
-        ValorUnicos = [X]  % Solo si tiene exactamente un elemento y no está vacía
-        ->  Reemplazo = [X],
-        % Reemplazar el valor en la lista de Posibilidades
-        replace(Posibilidades, Indice, Reemplazo, NuevaPosibilidadesParcial),
-
-        % Llamada recursiva para procesar el siguiente índice
-        IndiceSiguiente is Indice + 1,
-        actualizar_posibilidades_con_unicos(NuevaPosibilidadesParcial,IndiceSiguiente ,Unicos,Posibilidades_Fin)
-    ;
-        % Llamada recursiva para procesar el siguiente índice
-        Reemplazo = ListaPosibilidades,
-        replace(Posibilidades, Indice, Reemplazo, NuevaPosibilidadesParcial),
-        IndiceSiguiente is Indice + 1,
-        actualizar_posibilidades_con_unicos(NuevaPosibilidadesParcial,IndiceSiguiente ,Unicos,Posibilidades_Fin)
-    ).
-
-
-
-
-
-
-
-
-% Función principal para iniciar la comparación
-verificar_repetidos(Filas, Columnas, Cuadrados, Valores, FilaDef, ColumnaDef, Cuadrados_Def) :-
-    % Definir los índices
-    Indice_Cuadrado=[[1,2,3,10,11,12,19,20,21],[4,5,6,13,14,15,22,23,24],[7,8,9,16,17,18,25,26,27],[28,29,30,37,38,39,46,47,48],[31,32,33,40,41,42,49,50,51],[34,35,36,43,44,45,52,53,54],[55,56,57,64,65,66,73,74,75],[58,59,60,67,68,69,76,77,78],[61,62,63,70,71,72,79,80,81]],
-    Indice_Columnas=[[1,10,19,28,37,46,55,64,73],[2,11,20,29,38,47,56,65,74],[3,12,21,30,39,48,57,66,75],[4,13,22,31,40,49,58,67,76],[5,14,23,32,41,50,59,68,77],[6,15,24,33,42,51,60,69,78],[7,16,25,34,43,52,61,70,79],[8,17,26,35,44,53,62,71,80],[9,18,27,36,45,54,63,72,81]],
-    Indice_Filas=[[1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18],[19,20,21,22,23,24,25,26,27],[28,29,30,31,32,33,34,35,36],[37,38,39,40,41,42,43,44,45],[46,47,48,49,50,51,52,53,54],[55,56,57,58,59,60,61,62,63],[64,65,66,67,68,69,70,71,72],[73,74,75,76,77,78,79,80,81]],
-
-    % Eliminar repetidos dentro de cada lista de filas, columnas y cuadrados
-
-    eliminar_repetidos_de_las_listas(Indice_Filas,1, Valores, Filas, FilaDef),
-    
-    eliminar_repetidos_de_las_listas(Indice_Columnas, 1,Valores, Columnas, ColumnaDef),
-    eliminar_repetidos_de_las_listas(Indice_Cuadrado, 1, Valores, Cuadrados, Cuadrados_Def).
+    aplicar_regla_0(Tablero,NuevaPosibilidades4, NuevoTablero),
+    writeln("Sudoku resuelto despues de aplicar regla 0:"),
+    imprimir_sudoku(NuevoTablero).
     
 
 
 
 
-% Caso base: cuando hemos procesado todas las casillas
-aplicar_regla_1(Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos,FilaDef, ColumnaDef, Cuadrados_Def, NuevaPosibilidades) :-
-    verificar_repetidos(FilaUnicos, ColumnaUnicos, CuadradoUnicos, Posibilidades, FilaDef, ColumnaDef, Cuadrados_Def),
-
-    Posibilidades_Originales=Posibilidades,
-
-    actualizar_posibilidades_con_unicos(Posibilidades, 1,FilaDef, Temp1),
-    
-    (Posibilidades_Originales\==Temp1
-    -> NuevaPosibilidades=Temp1
-    ;
-        Temp1_Original=Temp1,
-        actualizar_posibilidades_con_unicos(Temp1, 1, ColumnaDef, Temp2),
-        (Temp1_Original\==Temp2
-        -> NuevaPosibilidades=Temp2
-        ;
-        actualizar_posibilidades_con_unicos(Temp2, 1,Cuadrados_Def, NuevaPosibilidades)
-        )
-
-    ).
 
 
 
@@ -447,25 +432,10 @@ aplicar_regla_1(Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos,FilaDef
 
 
 
-
-% Predicado para aplicar la Regla 0 y actualizar el Sudoku
-
-
-resolver_regla_1(Posibilidades, Fin) :-
-    
-    aplicar_regla_1(Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos,FilaDef, ColumnaDef, Cuadrados_Def,NuevaPosibilidades),
-    
-    Fin=NuevaPosibilidades.
     
 resolver_regla_0(Sudoku, NuevoSudoku) :-
     generar_posibilidades(Sudoku, Posibilidades),
-    aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku).
-
-
-
-% Predicado para aplicar la Regla 0 y actualizar el Sudoku
-resolver_regla_0(Sudoku, NuevoSudoku) :-
-    generar_posibilidades(Sudoku, Posibilidades),
+    %resolver_regla_1(Sudoku, NuevoSudoku, Posibilidades, Fin),
     aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku).
 
 % Predicado para aplicar la Regla 0 una vez
@@ -490,14 +460,6 @@ imprimir_sudoku_lista :-
     sudoku(Tablero),
     writeln(Tablero).
 
-
-% Predicado para imprimir el sudoku en forma de lista
-imprimir_sudoku_lista :-
-    sudoku(Tablero),
-    writeln(Tablero).
-
-
-
 %Predicado para imprimir el sudoku en forma de tablero
 imprimir_sudoku_tablero :-
     sudoku(Tablero),
@@ -517,7 +479,11 @@ imprimir_lista_posibilidades :-
 
 %Predicado para probar la Regla 0
 probar_regla_0 :-
-    sudoku2(Tablero),
+    sudoku1(Tablero),
+    imprimir_sudoku(Tablero),
+    generar_posibilidades(Tablero, Posibilidades),
+    imprimir_sudoku(Posibilidades),
+    writeln("Aplicando Regla 0..."),
     resolver_regla_0(Tablero, NuevoTablero), 
     imprimir_sudoku(NuevoTablero),
     generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
@@ -721,8 +687,6 @@ resolver_reglas_0_y_2(Sudoku, NuevoSudoku) :-
     % Aplica la Regla 0 al Sudoku con las nuevas posibilidades
     aplicar_regla_0(Sudoku, PosibilidadesRegla2, NuevoSudoku).
 
-
-
 % Predicado para iterar las Reglas 0 y 2 hasta que no haya mas cambios
 iterar_reglas_0_y_2(Sudoku, NuevoSudoku) :-
     % Aplica las Reglas 0 y 2 al Sudoku
@@ -733,66 +697,15 @@ iterar_reglas_0_y_2(Sudoku, NuevoSudoku) :-
     ;   NuevoSudoku = Sudoku  % Si no hubo cambios, el Sudoku está actualizado
     ).
 
-resolver_reglas_0_y_1_y_2(Sudoku, NuevoSudoku) :-
-    generar_posibilidades(Sudoku, Posibilidades),
-    aplicar_regla_2(Posibilidades, PosibilidadesRegla2),
-    resolver_regla_1(PosibilidadesRegla2, Fin),
-    aplicar_regla_0(Sudoku, Fin, NuevoSudoku).
-
-
-
-
-iterar_reglas_0_y_1(Sudoku, NuevoSudoku) :-
-    % Aplica las Reglas 0 y 2 al Sudoku
-    resolver_reglas_0_y_1(Sudoku, SudokuIntermedio),
-    % Si hubo cambios en el Sudoku, continúa iterando
-    (   Sudoku \= SudokuIntermedio ->
-        iterar_reglas_0_y_1(SudokuIntermedio, NuevoSudoku)
-    ;   NuevoSudoku = Sudoku  % Si no hubo cambios, el Sudoku está actualizado
-    ).
-
-iterar_reglas_0_y_1_y_2(Sudoku, NuevoSudoku) :-
-    % Aplica las Reglas 0 y 2 al Sudoku
-    resolver_reglas_0_y_1_y_2(Sudoku, SudokuIntermedio),
-    % Si hubo cambios en el Sudoku, continúa iterando
-    (   Sudoku \= SudokuIntermedio ->
-        iterar_reglas_0_y_1_y_2(SudokuIntermedio, NuevoSudoku)
-    ;   NuevoSudoku = Sudoku  % Si no hubo cambios, el Sudoku está actualizado
-    ).
-
 % Predicado para probar las Reglas 0 y 2
 probar_reglas_0_y_2 :-
     % Obtiene el tablero de Sudoku
-    sudoku4(Tablero),
+    sudoku1(Tablero),
     imprimir_sudoku(Tablero),
     % Itera las Reglas 0 y 2 hasta que no haya mas cambios
     iterar_reglas_0_y_2(Tablero, NuevoTablero),
     % Imprime el Sudoku después de aplicar las Reglas 0 y 2
     writeln("Sudoku despues de aplicar las Reglas 0 y 2:"),
-    imprimir_sudoku(NuevoTablero),
-    generar_posibilidades(NuevoTablero, Posibilidades),
-    imprimir_sudoku(Posibilidades).
-
-probar_reglas_0_y_1_y_2 :-
-    % Obtiene el tablero de Sudoku
-    sudoku4(Tablero),
-    imprimir_sudoku(Tablero),
-    % Itera las Reglas 0 y 1 y 2 hasta que no haya mas cambios
-    iterar_reglas_0_y_1_y_2(Tablero, NuevoTablero),
-    % Imprime el Sudoku después de aplicar las Reglas 0 y 1 y 2
-    writeln("Sudoku despues de aplicar las Reglas 0 y 1 y 2:"),
-    imprimir_sudoku(NuevoTablero),
-    generar_posibilidades(NuevoTablero, Posibilidades),
-    imprimir_sudoku(Posibilidades).
-
-probar_reglas_0_y_1 :-
-    % Obtiene el tablero de Sudoku
-    sudoku4(Tablero),
-    imprimir_sudoku(Tablero),
-    % Itera las Reglas 0 y 1 y 2 hasta que no haya mas cambios
-    iterar_reglas_0_y_1(Tablero, NuevoTablero),
-    % Imprime el Sudoku después de aplicar las Reglas 0 y 1 y 2
-    writeln("Sudoku despues de aplicar las Reglas 0 y 1:"),
     imprimir_sudoku(NuevoTablero),
     generar_posibilidades(NuevoTablero, Posibilidades),
     imprimir_sudoku(Posibilidades).
@@ -930,7 +843,7 @@ probar_reglas_0_y_1 :-
     % Predicado para probar la Regla 3
     probar_regla_3 :-
         % Obtiene el tablero de Sudoku
-        sudoku8(Tablero),
+        sudoku1(Tablero),
         % Genera las posibilidades para el tablero
         generar_posibilidades(Tablero, Posibilidades),
         imprimir_sudoku(Posibilidades),
@@ -941,32 +854,50 @@ probar_reglas_0_y_1 :-
         imprimir_sudoku(NuevaPosibilidades).
 
 
-
-
-resolver_reglas_0_y_3(Sudoku, NuevoSudoku) :-
+resolver_reglas_0_y_1_y_2_y_3(Sudoku, NuevoSudoku) :-
+    % Genera las posibilidades para el Sudoku
     generar_posibilidades(Sudoku, Posibilidades),
-    aplicar_regla_3(Posibilidades, NuevaPosibilidades),
-    aplicar_regla_0(Sudoku, NuevaPosibilidades, NuevoSudoku).
 
 
-iterar_reglas_0_y_3(Sudoku, NuevoSudoku) :-
+    % Genera las posibilidades para el tablero
+    imprimir_sudoku(Posibilidades),
+    % Aplica la Regla 3 a las posibilidades
+    aplicar_regla_3(Posibilidades, PosibilidadesRegla3),
+    % Imprime las posibilidades después de aplicar la Regla 3
+    writeln("Posibilidades despues de aplicar la Regla 3:"),
+    imprimir_sudoku(PosibilidadesRegla3),
+    % Aplica la Regla 2 a las posibilidades
+    aplicar_regla_2(PosibilidadesRegla3, PosibilidadesRegla2),
+
+    writeln("Posibilidades despues de aplicar la Regla 2:"),
+    imprimir_sudoku(PosibilidadesRegla2),
+
+    aplicar_regla_1(PosibilidadesRegla2, Fin),
+    writeln("Posibilidades despues de aplicar la Regla 1:"),
+    imprimir_sudoku(Fin),
+    % Aplica la Regla 0 al Sudoku con las nuevas posibilidades
+    aplicar_regla_0(Sudoku, Fin, NuevoSudoku).
+
+
+
+iterar_reglas_0_y_1_y_2_y_3(Sudoku, NuevoSudoku) :-
     % Aplica las Reglas 0 y 2 al Sudoku
-    resolver_reglas_0_y_3(Sudoku, SudokuIntermedio),
+    resolver_reglas_0_y_1_y_2_y_3(Sudoku, SudokuIntermedio),
     % Si hubo cambios en el Sudoku, continúa iterando
     (   Sudoku \= SudokuIntermedio ->
-        iterar_reglas_0_y_3(SudokuIntermedio, NuevoSudoku)
+        iterar_reglas_0_y_1_y_2_y_3(SudokuIntermedio, NuevoSudoku)
     ;   NuevoSudoku = Sudoku  % Si no hubo cambios, el Sudoku está actualizado
     ).
 
 
-probar_reglas_0_y_3 :-
+probar_reglas_0_y_1_y_2_y_3 :-
     % Obtiene el tablero de Sudoku
     sudoku4(Tablero),
     imprimir_sudoku(Tablero),
     % Itera las Reglas 0 y 1 y 2 hasta que no haya mas cambios
-    iterar_reglas_0_y_3(Tablero, NuevoTablero),
+    iterar_reglas_0_y_1_y_2_y_3(Tablero, NuevoTablero),
     % Imprime el Sudoku después de aplicar las Reglas 0 y 1 y 2
-    writeln("Sudoku despues de aplicar las Reglas 0 y 1:"),
+    writeln("Sudoku despues de aplicar las Reglas 0 y 1 y 2 y 3:"),
     imprimir_sudoku(NuevoTablero),
     generar_posibilidades(NuevoTablero, Posibilidades),
     imprimir_sudoku(Posibilidades).
