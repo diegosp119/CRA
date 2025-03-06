@@ -9,7 +9,6 @@ sudoku1([., ., 6, ., ., 2, 3, ., 4,
         7, ., ., 2, ., 4, 5, ., 3,
         ., 3, 7, ., ., ., 6, ., 9]).
 
-
 sudoku2([
     ., 8, ., 5, 7, 6, 2, ., .,
     ., ., ., 4, ., 2, ., ., .,
@@ -265,11 +264,13 @@ resolver_sudoku(Sudoku, SudokuFinal) :-
 
 resolver_sudoku_iterativo(Sudoku, SudokuFinal) :-
     resolver_regla_0(Sudoku, SudokuRegla0),  % Aplicar Regla 0
-    generar_posibilidades(SudokuRegla0,Paco)
-    aplicar_regla_1(SudokuRegla0, Paco),  % Aplicar Regla 1
-    (   SudokuNuevo \= Sudoku ->  % Si el Sudoku cambió, repetir la iteración
-        resolver_sudoku_iterativo(SudokuNuevo, SudokuFinal)
-    ;   SudokuFinal = SudokuNuevo  % Si no cambió, devolver el Sudoku actual
+    generar_posibilidades(SudokuRegla0, Paco),
+    writeln('Regla 0:'),
+    imprimir_sudoku(SudokuRegla0),
+    aplicar_regla_1(SudokuRegla0, Paco),
+    (   casillas_vacias(SudokuRegla0) ->  % Verifica si hay casillas vacías
+        resolver_sudoku_iterativo(SudokuRegla0, SudokuFinal)  % Repetir la iteración
+    ;   SudokuFinal = SudokuRegla0  % Si no hay casillas vacías, devolver el Sudoku final
     ).
 
 % Predicado para probar el nuevo comportamiento del resolver
