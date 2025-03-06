@@ -1018,7 +1018,7 @@ iterar_reglas_0_y_1_y_2_y_3(Sudoku, NuevoSudoku) :-
 
 probar_reglas_0_y_1_y_2_y_3 :-
     % Obtiene el tablero de Sudoku
-    sudoku6(Tablero),
+    sudoku5(Tablero),
     imprimir_sudoku(Tablero),
     % Itera las Reglas 0 y 1 y 2 hasta que no haya mas cambios
     iterar_reglas_0_y_1_y_2_y_3(Tablero, NuevoTablero),
