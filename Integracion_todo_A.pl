@@ -33,18 +33,18 @@ sudoku2([5, 3, ., ., 7, ., ., ., .,
         ., ., ., ., 8, ., ., 7, 9
 ]).
 
-sudoku3([ ., ., 7, ., ., ., 8, ., .,
-         ., 4, 5, 7, 6, ., ., ., 2,
+sudoku3([., ., 7, ., ., 5, 8, ., .,
+         ., 4, 5, 7, 1, ., ., ., 2,
          6, ., ., ., 4, ., 3, ., 5,
          8, 6, ., 5, ., ., ., 4, .,
          ., ., 3, 8, ., 4, ., 6, .,
-         7, 2, 6, 9, ., ., 8, 3, .,
+         1, 2, ., 9, ., ., 5, 3, .,
          ., 5, ., ., ., ., 4, 7, .,
-         7, ., 4, ., ., ., ., ., 6,
-         3, 4, ., ., 6, ., 6, 2, 8]).
+         7, ., ., ., ., ., ., ., 6,
+         3, 4, ., ., 6, ., ., 2, 8]).
 
 sudoku4([ ., ., 6, ., ., 2, 3, ., 4,
-         9, ., 4, 7, 5, ., ., 7, 2,
+         9, ., 4, 7, 5, ., ., ., 2,
          ., ., 8, ., ., 6, ., ., 5,
          ., ., 3, ., ., ., ., 4, .,
          2, ., ., 4, ., ., 8, 3, .,
@@ -392,7 +392,7 @@ obtener_posibilidades_cuadro(Posibilidades, Cuadro, Resultado) :-
 % Prueba de Regla 1
 
 probar_regla_1 :-
-    sudoku6(Tablero),
+    sudoku1(Tablero),
     generar_posibilidades(Tablero, Posibilidades),
     writeln("Posibilidades iniciales:"),
     imprimir_sudoku(Posibilidades),
@@ -435,8 +435,8 @@ probar_regla_1 :-
     
 resolver_regla_0(Sudoku, NuevoSudoku) :-
     generar_posibilidades(Sudoku, Posibilidades),
-    %resolver_regla_1(Sudoku, NuevoSudoku, Posibilidades, Fin),
-    aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku).
+    resolver_regla_1(Sudoku, NuevoSudoku, Posibilidades, Fin),
+    aplicar_regla_0(Sudoku, Fin, NuevoSudoku).
 
 % Predicado para aplicar la Regla 0 una vez
 aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku) :-
@@ -857,8 +857,6 @@ probar_reglas_0_y_2 :-
 resolver_reglas_0_y_1_y_2_y_3(Sudoku, NuevoSudoku) :-
     % Genera las posibilidades para el Sudoku
     generar_posibilidades(Sudoku, Posibilidades),
-
-
     % Genera las posibilidades para el tablero
     imprimir_sudoku(Posibilidades),
     % Aplica la Regla 3 a las posibilidades
@@ -868,17 +866,28 @@ resolver_reglas_0_y_1_y_2_y_3(Sudoku, NuevoSudoku) :-
     imprimir_sudoku(PosibilidadesRegla3),
     % Aplica la Regla 2 a las posibilidades
     aplicar_regla_2(PosibilidadesRegla3, PosibilidadesRegla2),
-
     writeln("Posibilidades despues de aplicar la Regla 2:"),
     imprimir_sudoku(PosibilidadesRegla2),
+
+
+    imprimir_sudoku(NuevaPosibilidades),
+    writeln("Posibilidades despues de aplicar la Regla 1 por primera vez:"),
+    aplicar_regla_1(NuevaPosibilidades, NuevaPosibilidades2),
+
+    imprimir_sudoku(NuevaPosibilidades2),
+    writeln("Posibilidades despues de aplicar la Regla 1 por segunda vez:"),
+    aplicar_regla_1(NuevaPosibilidades2, NuevaPosibilidades3),
+    imprimir_sudoku(NuevaPosibilidades3),
+    writeln("Posibilidades despues de aplicar la Regla 1 por tercera vez:"),
+    aplicar_regla_1(NuevaPosibilidades3, NuevaPosibilidades4),
+    imprimir_sudoku(NuevaPosibilidades4),
+
 
     aplicar_regla_1(PosibilidadesRegla2, Fin),
     writeln("Posibilidades despues de aplicar la Regla 1:"),
     imprimir_sudoku(Fin),
     % Aplica la Regla 0 al Sudoku con las nuevas posibilidades
     aplicar_regla_0(Sudoku, Fin, NuevoSudoku).
-
-
 
 iterar_reglas_0_y_1_y_2_y_3(Sudoku, NuevoSudoku) :-
     % Aplica las Reglas 0 y 2 al Sudoku
@@ -888,7 +897,6 @@ iterar_reglas_0_y_1_y_2_y_3(Sudoku, NuevoSudoku) :-
         iterar_reglas_0_y_1_y_2_y_3(SudokuIntermedio, NuevoSudoku)
     ;   NuevoSudoku = Sudoku  % Si no hubo cambios, el Sudoku está actualizado
     ).
-
 
 probar_reglas_0_y_1_y_2_y_3 :-
     % Obtiene el tablero de Sudoku
