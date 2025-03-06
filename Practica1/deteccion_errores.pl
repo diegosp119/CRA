@@ -12,9 +12,9 @@ sudoku2([
 
 lista_correcta(Lista) :-
     exclude(==(.), Lista, Numeros),  % Filtrar los valores no numéricos
-    sort(Numeros, NumerosOrdenados),
-    length(Numeros, L),
-    length(NumerosOrdenados, L).  % Verificar que no hay repetidos
+    sort(Numeros, NumerosOrdenados), %ordena los valores númericos eliminando repetidos
+    length(Numeros, L), % Obtiene la longitud de la lista original sin puntos
+    length(NumerosOrdenados, L).  %Obtiene la longitud de la lista ordenada que debe ser igual que la anterior para sacar true
 
 extraer_filas([], []).
 extraer_filas(Sudoku, [Fila | Resto]) :-
@@ -25,7 +25,7 @@ extraer_filas(Sudoku, [Fila | Resto]) :-
 extraer_columnas(Sudoku, Columnas) :-
     findall(Columna, (between(0, 8, N), %N toma valores de 0 a 8, representando los índices de las 9 columnas
                       findall(Elem, (between(0, 8, M), %between(0, 8, M): Itera sobre las 9 filas
-                                     Index is M * 9 + N, %Index is M * 9 + N: Calcula el índice del elemento en la lista unidimensional
+                                     Index is M * 9 + N, %Calcula el índice del elemento en la lista unidimensional
                                      nth0(Index, Sudoku, Elem)), Columna)), Columnas). %findall almacena todas las listas generadas en Columnas, que será la lista de columnas del Sudoku
 
 extraer_cuadrantes(Sudoku, Cuadrantes) :-
@@ -33,12 +33,12 @@ extraer_cuadrantes(Sudoku, Cuadrantes) :-
         member(R, [0, 3, 6]), member(C, [0, 3, 6]), %R y C representan las coordenadas de inicio de cada cuadrante 3x3
         findall(Elem, (                            %Se toman los valores [0, 3, 6], que son las filas y columnas donde comienzan los 9 cuadrantes
             between(0, 2, DR), between(0, 2, DC), %between(0, 2, DR): Itera sobre las 3 filas dentro del cuadrante y between(0, 2, DC): Itera sobre las 3 columnas dentro del cuadrante
-            Index is (R + DR) * 9 + (C + DC),  %Index is (R + DR) * 9 + (C + DC): Calcula la posición del elemento en la lista unidimensional
-            nth0(Index, Sudoku, Elem) %nth0(Index, Sudoku, Elem): Extrae el elemento de la lista en la posición Index
+            Index is (R + DR) * 9 + (C + DC),  %Calcula la posición del elemento en la lista unidimensional
+            nth0(Index, Sudoku, Elem) %Extrae el elemento de la lista en la posición Index
         ), Cuadrante)
     ), Cuadrantes).
 
-verificar_secciones(Extraer, Nombre) :- %Extraer: Un predicado que extrae las secciones del Sudoku (puede ser extraer_filas/2, extraer_columnas/2 o extraer_cuadrantes/2)
+verificar_secciones(Extraer, Nombre) :- %Extraer: Un predicado que extrae las secciones del Sudoku (puede ser extraer_filas, extraer_columnas o extraer_cuadrantes
     sudoku2(Sudoku),
     call(Extraer, Sudoku, Secciones), %Llama dinámicamente al predicado de extracción (call(Extraer, Sudoku, Secciones)) para obtener todas las filas, columnas o cuadrantes
     verificar_secciones_aux(Secciones, 1, [], Nombre). %Nombre: Un string que indica el tipo de sección a verificar ('fila', 'columna' o 'cuadrante')
