@@ -33,6 +33,71 @@ sudoku2([5, 3, ., ., 7, ., ., ., .,
         ., ., ., ., 8, ., ., 7, 9
 ]).
 
+sudoku3([ ., ., 7, ., ., ., 8, ., .,
+         ., 4, 5, 7, 6, ., ., ., 2,
+         6, ., ., ., 4, ., 3, ., 5,
+         8, 6, ., 5, ., ., ., 4, .,
+         ., ., 3, 8, ., 4, ., 6, .,
+         7, 2, 6, 9, ., ., 8, 3, .,
+         ., 5, ., ., ., ., 4, 7, .,
+         7, ., 4, ., ., ., ., ., 6,
+         3, 4, ., ., 6, ., 6, 2, 8]).
+
+sudoku4([ ., ., 6, ., ., 2, 3, ., 4,
+         9, ., 4, 7, 5, ., ., 7, 2,
+         ., ., 8, ., ., 6, ., ., 5,
+         ., ., 3, ., ., ., ., 4, .,
+         2, ., ., 4, ., ., 8, 3, .,
+         4, ., 7, 5, ., ., ., ., .,
+         ., ., ., 6, ., ., ., ., 8,
+         7, ., ., ., 2, ., 4, 5, 3,
+         ., ., ., 3, 7, ., ., 6, 9]).
+
+sudoku5([
+    ., 8, ., 5, 7, 6, 2, ., .,
+    ., ., ., 4, ., 2, ., ., .,
+    ., ., ., ., 3, 9, 5, 4, 8,
+    6, 3, ., 9, ., ., 8, 5, 2,
+    ., 9, ., 2, ., ., 3, 7, .,
+    8, ., ., ., 5, ., 6, 9, 4,
+    2, 5, 7, 6, ., 3, 4, 8, 9,
+    3, ., 8, 7, ., ., ., 2, 5,
+    ., 4, ., ., ., ., ., ., 6
+]).
+sudoku6([
+    ., 9, ., ., 2, 4, ., 7, .,
+    ., ., ., ., ., ., ., ., .,
+    6, 4, 8, 3, ., 7, ., ., .,
+    ., 7, ., ., 4, 5, 6, ., 3,
+    ., 5, ., ., ., ., ., 2, 7,
+    2, ., 6, ., ., ., ., ., .,
+    3, ., ., ., 8, ., ., 4, .,
+    ., 7, ., 4, 3, ., ., 5, 6,
+    4, 2, 5, ., ., ., 8, 3, 9
+]).
+sudoku7([
+    7, 9, ., ., 6, 4, ., ., 2,
+    ., ., 3, 6, ., ., 7, ., .,
+    ., 4, 8, 1, ., 7, ., ., .,
+    ., 7, ., ., 4, 5, 6, 9, 3,
+    2, ., ., ., ., ., ., ., 7,
+    ., ., 6, ., ., ., ., 2, .,
+    4, ., ., ., 8, ., ., 3, .,
+    5, 7, ., 4, 3, ., ., ., 6,
+    3, 2, 5, ., ., ., 8, 4, 9]).
+
+sudoku8([
+    ., 9, ., ., 2, 4, ., 7, .,
+    ., ., ., ., ., ., ., ., .,
+    6, 4, ., 3, ., 7, ., ., .,
+    ., 7, ., ., 4, 5, 6, ., 3,
+    ., 5, ., ., ., ., ., 2, 7,
+    2, ., 6, ., ., ., ., ., .,
+    3, ., ., ., 8, ., ., 4, .,
+    ., 7, ., 4, 3, ., ., 5, 6,
+    4, 2, 5, ., ., ., 8, 3, 9
+]).
+
 
 indice_filas([1,2,3,10,11,12,19,20,21,4,5,6,13,14,15,22,23,24,7,8,9,16,17,18,25,26,27,28,29,30,37,38,39,46,47,48,31,32,33,40,41,42,49,50,51,34,35,36,43,44,45,52,53,54,55,56,57,64,65,66,73,74,75,58,59,60,67,68,69,76,77,78,61,62,63,70,71,72,79,80,81]).
 
@@ -209,7 +274,7 @@ filtrar_unicos([_|T], Conteo, Rest) :-
 eliminar_repetidos_global([], _, []).
 eliminar_repetidos_global([Lista|Resto], Conteo, [ListaFiltrada|RestoFiltrado]) :-
     filtrar_unicos(Lista, Conteo, ListaFiltrada),
-    writeln("Lista Filtrada: "), writeln(ListaFiltrada),
+    %writeln("Lista Filtrada: "), %writeln(ListaFiltrada),
     eliminar_repetidos_global(Resto, Conteo, RestoFiltrado).
 
 % Predicado principal para limpiar la lista de repetidos globales
@@ -266,7 +331,7 @@ actualizar_posibilidades_con_unicos(Posibilidades, 82,_,Posibilidades_Fin) :-
 actualizar_posibilidades_con_unicos(Posibilidades, Indice, Unicos, Posibilidades_Fin) :-
     % Extraer el valor de las posibles posibilidades en el índice actual
     nth1(Indice, Posibilidades, ListaPosibilidades),
-    %writeln("ListaPosibilidades"), writeln(ListaPosibilidades),
+    writeln("ListaPosibilidades"), writeln(ListaPosibilidades),
     % Comprobar si hay un valor único en FilaUnicos, ColumnaUnicos o CuadradoUnicos
     (   nth1(Indice, Unicos, ValorUnicos),
         ValorUnicos = [X]  % Solo si tiene exactamente un elemento y no está vacía
@@ -295,9 +360,9 @@ actualizar_posibilidades_con_unicos(Posibilidades, Indice, Unicos, Posibilidades
 % Función principal para iniciar la comparación
 verificar_repetidos(Filas, Columnas, Cuadrados, Valores, FilaDef, ColumnaDef, Cuadrados_Def) :-
     % Definir los índices
-    Indice_Filas=[[1,2,3,10,11,12,19,20,21],[4,5,6,13,14,15,22,23,24],[7,8,9,16,17,18,25,26,27],[28,29,30,37,38,39,46,47,48],[31,32,33,40,41,42,49,50,51],[34,35,36,43,44,45,52,53,54],[55,56,57,64,65,66,73,74,75],[58,59,60,67,68,69,76,77,78],[61,62,63,70,71,72,79,80,81]],
-    Indice_Columnas=[[1,4,7,28,31,34,55,58,61],[2,5,8,29,32,35,56,59,62],[3,6,9,30,33,36,57,60,63],[10,13,16,37,40,43,64,67,70],[11,14,17,38,41,44,65,68,71],[12,15,18,39,42,45,66,69,72],[19,22,25,46,49,52,73,76,79],[20,23,26,47,50,53,74,77,80],[21,24,27,48,51,54,75,78,81]],
-    Indice_Cuadrado=[[1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18],[19,20,21,22,23,24,25,26,27],[28,29,30,31,32,33,34,35,36],[37,38,39,40,41,42,43,44,45],[46,47,48,49,50,51,52,53,54],[55,56,57,58,59,60,61,62,63],[64,65,66,67,68,69,70,71,72],[73,74,75,76,77,78,79,80,81]],
+    Indice_Cuadrado=[[1,2,3,10,11,12,19,20,21],[4,5,6,13,14,15,22,23,24],[7,8,9,16,17,18,25,26,27],[28,29,30,37,38,39,46,47,48],[31,32,33,40,41,42,49,50,51],[34,35,36,43,44,45,52,53,54],[55,56,57,64,65,66,73,74,75],[58,59,60,67,68,69,76,77,78],[61,62,63,70,71,72,79,80,81]],
+    Indice_Columnas=[[1,10,19,28,37,46,55,64,73],[2,11,20,29,38,47,56,65,74],[3,12,21,30,39,48,57,66,75],[4,13,22,31,40,49,58,67,76],[5,14,23,32,41,50,59,68,77],[6,15,24,33,42,51,60,69,78],[7,16,25,34,43,52,61,70,79],[8,17,26,35,44,53,62,71,80],[9,18,27,36,45,54,63,72,81]],
+    Indice_Filas=[[1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18],[19,20,21,22,23,24,25,26,27],[28,29,30,31,32,33,34,35,36],[37,38,39,40,41,42,43,44,45],[46,47,48,49,50,51,52,53,54],[55,56,57,58,59,60,61,62,63],[64,65,66,67,68,69,70,71,72],[73,74,75,76,77,78,79,80,81]],
 
     % Eliminar repetidos dentro de cada lista de filas, columnas y cuadrados
 
@@ -359,11 +424,12 @@ aplicar_regla_1(Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos,FilaDef
 % Predicado para aplicar la Regla 0 y actualizar el Sudoku
 %FALTARIA UNIR CON REGLA 0
 resolver_regla_1(Sudoku, NuevoSudoku, Posibilidades, Fin) :-
-    ajuste_de_posibilidades(Posibilidades, PosibilidadesAjustadas),
+    %ajuste_de_posibilidades(Posibilidades, PosibilidadesAjustadas),
     writeln("Posibilidades: "), writeln(Posibilidades),
-    aplicar_regla_1(PosibilidadesAjustadas, FilaUnicos, ColumnaUnicos, CuadradoUnicos,FilaDef, ColumnaDef, Cuadrados_Def,NuevaPosibilidades),
-    ajuste_de_posibilidades(NuevaPosibilidades, Fin),
-    writeln(" Posibilidades Depuradas: "), writeln(Fin).
+    aplicar_regla_1(Posibilidades, FilaUnicos, ColumnaUnicos, CuadradoUnicos,FilaDef, ColumnaDef, Cuadrados_Def,NuevaPosibilidades),
+    %ajuste_de_posibilidades(NuevaPosibilidades, Fin),
+    Fin=NuevaPosibilidades,
+    writeln(" Posibilidades Depuradas: "), writeln(NuevaPosibilidades).
     
 resolver_regla_0(Sudoku, NuevoSudoku) :-
     generar_posibilidades(Sudoku, Posibilidades),
@@ -411,7 +477,7 @@ imprimir_lista_posibilidades :-
 
 %Predicado para probar la Regla 0
 probar_regla_0 :-
-    sudoku2(Tablero),
+    sudoku3(Tablero),
     resolver_regla_0(Tablero, NuevoTablero), 
     imprimir_sudoku(NuevoTablero),
     generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
