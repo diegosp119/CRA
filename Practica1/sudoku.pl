@@ -10,7 +10,7 @@ sudoku1([., ., 6, ., ., 2, 3, ., 4,
         ., 3, 7, ., ., ., 6, ., 9]).
 
 
-sudoku([
+sudoku2([
     ., 8, ., 5, 7, 6, 2, ., .,
     ., ., ., 4, ., 2, ., ., .,
     ., ., ., ., 3, 9, 5, 4, 8,
@@ -21,6 +21,16 @@ sudoku([
     3, ., 8, 7, ., ., ., 2, 5,
     ., 4, ., ., ., ., ., ., 6
 ]).
+
+sudoku([5, 3, ., ., 7, ., ., ., .,
+        6, ., ., 1, 9, 5, ., ., .,
+        1, 9, 8, ., ., ., ., 6, .,
+        8, ., ., ., 6, ., ., ., 3,
+        4, ., ., 8, ., 3, ., ., 1,
+        7, ., ., ., 2, ., ., ., 6,
+        ., 6, ., ., ., ., 2, 8, .,
+        ., ., ., 4, 1, 9, ., ., 5,
+        ., ., ., ., 8,.,.,7,9]).
 
 % Predicado para imprimir el tablero de Sudoku
 imprimir_sudoku([]).
@@ -194,15 +204,16 @@ numeros_unicos(Tipo, Posibilidades, Index, UnicosPrevios, UnicosFinales) :-
     % Unir los nuevos únicos con los previos
     append(UnicosPrevios, UnicosNuevos, UnicosFinales).
 
-
 %Función creada para comprobar que funciona individualmente para cada casilla
 %la detección de posibilidades no repetidas en una misma fila, columna o cuadro
 probar_numeros_unicos :-
-    sudoku(Tablero),
+    sudoku(Antiguo_Tablero),
+    resolver_regla_0(Antiguo_Tablero, Tablero),
     imprimir_sudoku(Tablero),
     generar_posibilidades(Tablero, PosibilidadesActualizadas),
+    imprimir_sudoku(PosibilidadesActualizadas),
 
-    Index = 13, 
+    Index = 10, 
 
     numeros_unicos(fila, PosibilidadesActualizadas, Index, [], UnicosFila),
     writeln('Prueba FILA: Numeros unicos en la casilla seleccionada:'),
@@ -217,48 +228,61 @@ probar_numeros_unicos :-
     writeln(UnicosCuadro).
 
 
+%--------------------------------------------------------------------------------------------
 
-% Predicado para aplicar la Regla 1 a todo el Sudoku
-aplicar_regla_1(Sudoku, Posibilidades, NuevoPosibilidades) :-
-    aplicar_regla_1_aux(Sudoku, Posibilidades, 0, NuevoPosibilidades).
+% Predicado principal para aplicar la Regla 1 en todas las casillas del Sudoku una vez
+aplicar_regla_1(Sudoku, NuevaPosibilidades) :-
+    generar_posibilidades(Sudoku, Posibilidades), % Paso 1: Generar la lista de posibilidades inicial
+    aplicar_regla_1_casilla(Sudoku, Posibilidades, 0, NuevaPosibilidades).
 
-% Caso base: cuando hemos revisado todas las casillas (81 en total)
-aplicar_regla_1_aux(_, [], 81, []).
+% Recorrer todas las casillas aplicando la Regla 1
+aplicar_regla_1_casilla(_, Posibilidades, 81, Posibilidades). % Caso base: cuando llegamos al final
 
-% Caso recursivo: revisar cada casilla y aplicar la Regla 1 si se cumple la condición
-aplicar_regla_1_aux(Sudoku, [P|Ps], Index, [NuevoP|NuevoPs]) :-
-    (   P \= [],  % Si la casilla tiene posibilidades (no está ya resuelta)
+aplicar_regla_1_casilla(Sudoku, Posibilidades, Index, NuevaPosibilidadesFinal) :-
+    nth0(Index, Posibilidades, P),  % Obtener la lista de posibilidades de la casilla actual
+    (   P \= [] -> 
+        % Reiniciar la lista de únicos en cada iteración
         numeros_unicos(fila, Posibilidades, Index, [], UnicosFila),
         numeros_unicos(columna, Posibilidades, Index, UnicosFila, UnicosColumna),
         numeros_unicos(cuadro, Posibilidades, Index, UnicosColumna, UnicosFinales),
-        UnicosFinales = [Num|_]  % Si al menos un número es único en fila, columna o cuadro
-    ->  NuevoP = [Num]  % Se sustituye por ese número
-    ;   NuevoP = P  % Si no cumple la condición, se mantiene la lista de posibilidades
+        UnicosFinales \= [] -> % Si hay al menos un número único
+        [PrimerUnico | _] = UnicosFinales, % Tomar el primer número único
+        reemplazar_elemento(Index, [PrimerUnico], Posibilidades, PosibilidadesActualizadas)
+    ;   PosibilidadesActualizadas = Posibilidades  % Si la casilla ya estaba resuelta o no hay números únicos, mantener igual
     ),
     NextIndex is Index + 1,
-    aplicar_regla_1_aux(Sudoku, Ps, NextIndex, NuevoPs).
+    aplicar_regla_1_casilla(Sudoku, PosibilidadesActualizadas, NextIndex, NuevaPosibilidadesFinal).
 
+% Predicado para reemplazar un elemento en una lista
+reemplazar_elemento(0, X, [_|T], [X|T]).
+reemplazar_elemento(N, X, [H|T], [H|R]) :-
+    N > 0, N1 is N - 1, 
+    reemplazar_elemento(N1, X, T, R).
 
-% Predicado para aplicar las reglas 0 y 1 iterativamente hasta que el Sudoku ya no cambie
+% Predicado para aplicar la Regla 0 y Regla 1 en bucle hasta que el Sudoku no cambie
 resolver_sudoku(Sudoku, SudokuFinal) :-
-    resolver_regla_0(Sudoku, Sudoku0),
-    generar_posibilidades(Sudoku0, Posibilidades),
-    iterar_reglas(Sudoku0, Posibilidades, SudokuFinal).
+    resolver_sudoku_iterativo(Sudoku, SudokuFinal).
 
-iterar_reglas(Sudoku, Posibilidades, SudokuFinal) :-
-    aplicar_regla_1(Sudoku, Posibilidades, Posibilidades1),
-    actualizar_sudoku(Sudoku, Posibilidades1, Sudoku1),
-    resolver_regla_0(Sudoku1, Sudoku2),
-    (   Sudoku \= Sudoku2, % Si hubo cambios, seguimos iterando
-        length(Sudoku, L1), length(Sudoku2, L2), L1 =\= L2
-    ->  generar_posibilidades(Sudoku2, NuevasPosibilidades),
-        iterar_reglas(Sudoku2, NuevasPosibilidades, SudokuFinal)
-    ;   SudokuFinal = Sudoku2  % Si no hubo cambios, terminamos
+resolver_sudoku_iterativo(Sudoku, SudokuFinal) :-
+    resolver_regla_0(Sudoku, SudokuRegla0),  % Aplicar Regla 0
+    generar_posibilidades(SudokuRegla0,Paco)
+    aplicar_regla_1(SudokuRegla0, Paco),  % Aplicar Regla 1
+    (   SudokuNuevo \= Sudoku ->  % Si el Sudoku cambió, repetir la iteración
+        resolver_sudoku_iterativo(SudokuNuevo, SudokuFinal)
+    ;   SudokuFinal = SudokuNuevo  % Si no cambió, devolver el Sudoku actual
     ).
 
-
-% Predicado para probar la solución completa
-probar_resolucion :-
+% Predicado para probar el nuevo comportamiento del resolver
+probar_resolver_sudoku :-
     sudoku(Tablero),
-    resolver_sudoku(Tablero, Resultado),
-    imprimir_sudoku(Resultado).
+    writeln('Sudoku inicial:'),
+    imprimir_sudoku(Tablero),
+    (   resolver_sudoku(Tablero, SudokuFinal) ->
+        writeln('Sudoku después del intento de resolución:'),
+        imprimir_sudoku(SudokuFinal),
+        (   member(., SudokuFinal) ->  % Si todavía hay casillas vacías, el Sudoku no se resolvió completamente
+            writeln('El Sudoku quedó a medio resolver. No se pudo completar con las reglas implementadas.')
+        ;   writeln('¡Sudoku resuelto completamente!')
+        )
+    ;   writeln('No se pudo hacer ningún progreso en el Sudoku.')
+    ).
