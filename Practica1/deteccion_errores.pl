@@ -1,10 +1,3 @@
-% =============================================================================
-% Código Completo para Verificar y Resolver Sudoku (con posibilidad de listas)
-% =============================================================================
-
-% ------------------------------- Sudoku de ejemplo -------------------------------
-
-% Sudoku resuelto (usado para la verificación clásica)
 sudoku2([
     1,2,3,4,5,6,7,8,9,  
     4,5,6,7,8,9,1,2,3,  
@@ -17,7 +10,6 @@ sudoku2([
     9,1,2,3,4,5,6,7,8
 ]).
 
-% Sudoku con casillas vacías (representadas por el punto '.') 
 sudoku1([
     ., ., 9, 6, ., ., ., 1, .,
     8, ., ., ., ., 1, ., 9, .,
@@ -30,7 +22,6 @@ sudoku1([
     ., ., 5, ., 8, 4, ., ., 9
 ]).
 
-% Otro ejemplo de Sudoku (estado parcial)
 sudoku([
     ., 8, ., 5, 7, 6, 2, ., .,
     ., ., ., 4, ., 2, ., ., .,
@@ -39,104 +30,9 @@ sudoku([
     ., 9, ., 2, ., ., 3, 7, .,
     8, ., ., ., 5, ., 6, 9, 4,
     2, 5, 7, 6, ., 3, 4, 8, 9,
-    3, ., 8, 7, ., 7, ., 2, 5,
+    3, ., 8, 7, ., ., ., 2, 5,
     ., 4, ., ., ., ., ., ., 6
 ]).
-
-% -------------------------- Predicados Auxiliares --------------------------
-
-% Índices de la fila donde se encuentra la casilla en el índice dado.
-indices_fila(Index, Indices) :-
-    Fila is Index // 9,
-    Inicio is Fila * 9,
-    Fin is Inicio + 8,
-    findall(I, between(Inicio, Fin, I), Indices).
-
-% Índices de la columna donde se encuentra la casilla en el índice dado.
-indices_columna(Index, Indices) :-
-    Columna is Index mod 9,
-    findall(I, (between(0, 8, Fila), I is Fila * 9 + Columna), Indices).
-
-% Índices del cuadro 3x3 donde se encuentra la casilla en el índice dado.
-indices_cuadro(Index, Indices) :-
-    Fila is Index // 9,
-    Columna is Index mod 9,
-    CuadroFila is (Fila // 3) * 3,
-    CuadroColumna is (Columna // 3) * 3,
-    findall(I, 
-        (between(0, 2, DF), between(0, 2, DC), 
-         I is (CuadroFila + DF) * 9 + (CuadroColumna + DC)),
-        Indices).
-
-% Comprueba que en una lista (ignorando los '.') los números no se repitan.
-lista_correcta(Lista) :-
-    exclude(==(.), Lista, Numeros),
-    sort(Numeros, NumerosOrdenados),
-    length(Numeros, L),
-    length(NumerosOrdenados, L).
-
-% ------------------------ Verificación Clásica (sudoku2) ------------------------
-
-% Verifica las filas del Sudoku (sin considerar posibilidades de casillas vacías)
-verificar_filas :-
-    sudoku2(Sudoku),
-    forall(between(0, 80, Index), (
-        indices_fila(Index, FilaIndices),
-        findall(Element, (member(I, FilaIndices), nth0(I, Sudoku, Element)), Fila),
-        (lista_correcta(Fila) -> 
-            true;
-            format('Error en la fila con índice ~w: ~w~n', [Index, Fila])
-        )
-    )).
-
-% Verifica las columnas del Sudoku
-verificar_columnas :-
-    sudoku2(Sudoku),
-    forall(between(0, 8, Columna), ( 
-        indices_columna(Columna, ColumnaIndices),
-        findall(Element, (member(I, ColumnaIndices), nth0(I, Sudoku, Element)), Columna),
-        (lista_correcta(Columna) -> 
-            true;
-            format('Error en la columna con índice ~w: ~w~n', [Columna, Columna])
-        )
-    )).
-
-% Verifica los cuadros 3x3 del Sudoku
-verificar_cuadrantes :-
-    sudoku2(Sudoku),
-    forall(between(0, 8, Cuadro), ( 
-        indices_cuadro(Cuadro, CuadroIndices),
-        findall(Element, (member(I, CuadroIndices), nth0(I, Sudoku, Element)), Cuadrante),
-        (lista_correcta(Cuadrante) -> 
-            true;
-            format('Error en el cuadrante con índice ~w: ~w~n', [Cuadro, Cuadrante])
-        )
-    )).
-
-% Predicado principal de verificación clásica
-verificar_sudoku :-
-    verificar_filas,
-    verificar_columnas,
-    verificar_cuadrantes,
-    writeln('El Sudoku es válido.').
-
-% ---------------------- Impresión del Sudoku (Tablero) ----------------------
-
-imprimir_sudoku([]).
-imprimir_sudoku(Tablero) :-
-    imprimir_fila(Tablero, Resto),
-    imprimir_sudoku(Resto).
-
-imprimir_fila(Tablero, Resto) :-
-    tomar(9, Tablero, Fila, Resto),
-    writeln(Fila).
-
-% Toma los primeros N elementos de una lista.
-tomar(0, L, [], L).
-tomar(N, [H|T], [H|R], Resto) :-
-    N > 0,
-    N1 is N - 1,
-    tomar(N1, T, R, Resto).
 
 % -------------------------- Predicados para Posibilidades --------------------------
 
@@ -204,60 +100,12 @@ generar_posibilidades(Sudoku, Index, [P|Resto]) :-
     NextIndex is Index + 1,
     generar_posibilidades(Sudoku, NextIndex, Resto).
 
-% Imprime la lista de posibilidades para cada casilla.
-imprimir_posibilidades([]).
-imprimir_posibilidades([P|Ps]) :-
-    writeln(P),
-    imprimir_posibilidades(Ps).
-
-% --------------------------- Regla 0 para Resolver ---------------------------
-
-% Aplica recursivamente la Regla 0 para actualizar el Sudoku:
-% si alguna casilla vacía tiene una única posibilidad, se asigna ese número.
-resolver_regla_0(Sudoku, NuevoSudoku) :-
-    generar_posibilidades(Sudoku, Posibilidades),
-    aplicar_regla_0(Sudoku, Posibilidades, SudokuActualizado),
-    (   Sudoku \= SudokuActualizado -> 
-        resolver_regla_0(SudokuActualizado, NuevoSudoku)
-    ;   NuevoSudoku = Sudoku
-    ).
-
-% Aplica la Regla 0 una vez: actualiza cada casilla que tenga una única posibilidad.
-aplicar_regla_0([], [], []).
-aplicar_regla_0([C|Cs], [P|Ps], [NuevoC|Resto]) :-
-    (   length(P, 1) ->
-        [NuevoC] = P
-    ;   NuevoC = C
-    ),
-    aplicar_regla_0(Cs, Ps, Resto).
-
-% Predicados para imprimir el Sudoku en forma de lista o tablero.
-imprimir_sudoku_lista :-
-    sudoku(Tablero),
-    writeln(Tablero).
-
-imprimir_sudoku_tablero :-
-    sudoku(Tablero),
-    imprimir_sudoku(Tablero).
-
 % Genera e imprime la lista de posibilidades para el Sudoku.
 generar_lista_posibilidades :-
     sudoku(Tablero),
     generar_posibilidades(Tablero, Posibilidades),
     writeln(Posibilidades).
 
-imprimir_lista_posibilidades :-
-    sudoku(Tablero),
-    generar_posibilidades(Tablero, Posibilidades),
-    imprimir_posibilidades(Posibilidades).
-
-% Prueba la Regla 0: resuelve y muestra el Sudoku actualizado y sus posibilidades.
-probar_regla_0 :-
-    sudoku(Tablero),
-    resolver_regla_0(Tablero, NuevoTablero),
-    imprimir_sudoku(NuevoTablero),
-    generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
-    imprimir_posibilidades(PosibilidadesActualizadas).
 
 % ---------------- Verificación Extendida Considerando Posibilidades ----------------
 
