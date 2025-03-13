@@ -1344,3 +1344,19 @@ probar_contar_sudokus_regla_3 :-
     %format('Numero de Sudokus completos despues de aplicar la Regla 0: ~w~n', [Completos]),
     %format('Numero de Sudokus incompletos despues de aplicar la Regla 0: ~w~n', [Incompletos]),
     imprimir_conteo_sudokus(Completos, Incompletos).
+
+
+% Interfaz Interactiva: Permitir la entrada manual del Sudoku y mostrar el progreso paso a paso
+interfaz_interactiva :-
+    writeln('Ingrese el Sudoku como una lista de 81 elementos (usar . para celdas vacías):'),
+    read(Sudoku),
+    (   length(Sudoku, 81)
+    ->  ( writeln('Resolviendo el Sudoku paso a paso...'),
+           % Llamo a la combinación de reglas que quiera.
+           
+           resolver_reglas_0_y_1_y_2_y_3(Sudoku, Solucion),
+           writeln('Sudoku resuelto:'),
+           imprimir_sudoku(Solucion)
+         )
+    ;   writeln('Error: La lista ingresada debe tener 81 elementos.')
+    ).
