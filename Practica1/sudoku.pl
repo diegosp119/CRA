@@ -33,18 +33,18 @@ sudoku2([5, 3, ., ., 7, ., ., ., .,
         ., ., ., ., 8, ., ., 7, 9
 ]).
 
-sudoku3([ ., ., 7, ., ., ., 8, ., .,
-         ., 4, 5, 7, 6, ., ., ., 2,
+sudoku3([., ., 7, ., ., 5, 8, ., .,
+         ., 4, 5, 7, 1, ., ., 9, 2,
          6, ., ., ., 4, ., 3, ., 5,
          8, 6, ., 5, ., ., ., 4, .,
          ., ., 3, 8, ., 4, ., 6, .,
-         7, 2, 6, 9, ., ., 8, 3, .,
-         ., 5, ., ., ., ., 4, 7, .,
-         7, ., 4, ., ., ., ., ., 6,
-         3, 4, ., ., 6, ., 6, 2, 8]).
+         1, 2, ., 9, ., ., 5, 3, .,
+         ., 5, 9, ., ., ., 4, 7, .,
+         7, ., ., ., ., ., ., ., 6,
+         3, 4, ., ., 6, ., ., 2, 8]).
 
 sudoku4([ ., ., 6, ., ., 2, 3, ., 4,
-         9, ., 4, 7, 5, ., ., 7, 2,
+         9, ., 4, 7, 5, ., ., ., 2,
          ., ., 8, ., ., 6, ., ., 5,
          ., ., 3, ., ., ., ., 4, .,
          2, ., ., 4, ., ., 8, 3, .,
@@ -392,13 +392,12 @@ obtener_posibilidades_cuadro(Posibilidades, Cuadro, Resultado) :-
 % Prueba de Regla 1
 
 probar_regla_1 :-
-    sudoku6(Tablero),
+    sudoku3(Tablero),
     generar_posibilidades(Tablero, Posibilidades),
     writeln("Posibilidades iniciales:"),
     imprimir_sudoku(Posibilidades),
-    writeln("Aplicando Regla 3..."),
-    aplicar_regla_3(Posibilidades, NuevaPosibilidades),
-    
+    writeln("Aplicando Regla 1..."),
+    aplicar_regla_1(Posibilidades, NuevaPosibilidades),
     imprimir_sudoku(NuevaPosibilidades),
     writeln("Posibilidades despues de aplicar la Regla 1 por primera vez:"),
     aplicar_regla_1(NuevaPosibilidades, NuevaPosibilidades2),
@@ -409,13 +408,31 @@ probar_regla_1 :-
     writeln("Posibilidades despues de aplicar la Regla 1 por tercera vez:"),
     aplicar_regla_1(NuevaPosibilidades3, NuevaPosibilidades4),
     imprimir_sudoku(NuevaPosibilidades4),
+    writeln("Posibilidades despues de aplicar la Regla 2 por:"),
+    aplicar_regla_2(NuevaPosibilidades4, NuevaPosibilidades5),
+    imprimir_sudoku(NuevaPosibilidades5),
+    writeln("Posibilidades despues de aplicar la Regla 3 por:"),
+    aplicar_regla_3(NuevaPosibilidades5, NuevaPosibilidades6),
+    imprimir_sudoku(NuevaPosibilidades6),
+    writeln("Posibilidades despues de aplicar la Regla 1 por:"),
+    aplicar_regla_1(NuevaPosibilidades6, NuevaPosibilidades7),
+    imprimir_sudoku(NuevaPosibilidades7),
+    writeln("Posibilidades despues de aplicar la Regla 1 por:"),
+    aplicar_regla_3(NuevaPosibilidades7, NuevaPosibilidades8),
+    imprimir_sudoku(NuevaPosibilidades8),
+    writeln("Posibilidades despues de aplicar la Regla 1 por:"),
+    aplicar_regla_1(NuevaPosibilidades8, NuevaPosibilidades9),
+    imprimir_sudoku(NuevaPosibilidades9),
+    writeln("Posibilidades despues de aplicar la Regla 1 por:"),
+    aplicar_regla_3(NuevaPosibilidades9, NuevaPosibilidades10),
+    imprimir_sudoku(NuevaPosibilidades10),
     %%%%%%%%%%%%%%%%%%
 
     %CREAR FORMA DE DETECTAR QUE 2 LISTAS DE POSIBILIDADES SON IGUALES PARA NO HACER ITERACIONES DE MAS O DE MENOS
 
     %%%%%%%%%%%%%%%%%
 
-    aplicar_regla_0(Tablero,NuevaPosibilidades4, NuevoTablero),
+    aplicar_regla_0(Tablero,NuevaPosibilidades9, NuevoTablero),
     writeln("Sudoku resuelto despues de aplicar regla 0:"),
     imprimir_sudoku(NuevoTablero).
     
