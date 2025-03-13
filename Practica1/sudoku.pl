@@ -1346,17 +1346,46 @@ probar_contar_sudokus_regla_3 :-
     imprimir_conteo_sudokus(Completos, Incompletos).
 
 
-% Interfaz Interactiva: Permitir la entrada manual del Sudoku y mostrar el progreso paso a paso
+% Interfaz interactiva: Permite la entrada manual del Sudoku y la selección de regla a aplicar en cada paso.
 interfaz_interactiva :-
     writeln('Ingrese el Sudoku como una lista de 81 elementos (usar . para celdas vacías):'),
     read(Sudoku),
     (   length(Sudoku, 81)
-    ->  ( writeln('Resolviendo el Sudoku paso a paso...'),
-           % Llamo a la combinación de reglas que quiera.
-           
-           resolver_reglas_0_y_1_y_2_y_3(Sudoku, Solucion),
-           writeln('Sudoku resuelto:'),
-           imprimir_sudoku(Solucion)
-         )
+    ->  interfaz_loop(Sudoku)
     ;   writeln('Error: La lista ingresada debe tener 81 elementos.')
     ).
+
+% Bucle principal de la interfaz interactiva.
+interfaz_loop(Sudoku) :-
+    writeln('------------------------------'),
+    writeln('Estado actual del Sudoku:'),
+    imprimir_sudoku(Sudoku),
+    writeln('------------------------------'),
+    writeln('Seleccione la regla a aplicar:'),
+    writeln('   0 - Regla 0 (actualiza celdas con posibilidad única)'),
+    writeln('   1 - Regla 1 (eliminación de únicos globales)'),
+    writeln('   2 - Regla 2 (eliminación de pares únicos)'),
+    writeln('   3 - Regla 3 (eliminación de tríos únicos)'),
+    writeln('   t - Terminar la resolución'),
+    read(Opcion),
+    (   Opcion == t
+    ->  writeln('Resolución terminada.')
+    ;   aplicar_regla_interactiva(Opcion, Sudoku, NuevoSudoku),
+        interfaz_loop(NuevoSudoku)
+    ).
+
+% Predicado que aplica la regla elegida.
+aplicar_regla_interactiva(0, Sudoku, NuevoSudoku) :-
+    writeln('Aplicando Regla 0...'),
+    resolver_regla_0(Sudoku, NuevoSudoku).
+aplicar_regla_interactiva(1, Sudoku, NuevoSudoku) :-
+    writeln('Aplicando Regla 1...'),
+    iterar_reglas_0_y_1(Sudoku, NuevoSudoku).
+aplicar_regla_interactiva(2, Sudoku, NuevoSudoku) :-
+    writeln('Aplicando Regla 2...'),
+    iterar_reglas_0_y_2(Sudoku, NuevoSudoku).
+aplicar_regla_interactiva(3, Sudoku, NuevoSudoku) :-
+    writeln('Aplicando Regla 3...'),
+    iterar_reglas_0_y_3(Sudoku, NuevoSudoku).
+aplicar_regla_interactiva(_, Sudoku, Sudoku) :-
+    writeln('Opción no válida, no se aplicó ninguna regla.').
