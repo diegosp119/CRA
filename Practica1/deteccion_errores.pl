@@ -10,60 +10,74 @@ sudoku2([
     9, 1, 2, 3, 4, 5, 6, 7, 8
 ]).
 
+% Predicado para obtener los índices de la fila en la que está una casilla
+indices_fila(Index, Indices) :-
+    Fila is Index // 9,       % Obtener número de fila (división entera)
+    Inicio is Fila * 9,       % Índice de inicio de la fila
+    Fin is Inicio + 8,
+    findall(I, between(Inicio, Fin, I), Indices). % Generar los índices de toda la fila
+
+% Predicado para obtener los índices de la columna en la que está una casilla
+indices_columna(Index, Indices) :-
+    Columna is Index mod 9, % Obtener número de columna
+    findall(I, (between(0, 8, Fila), I is Fila * 9 + Columna), Indices). % Generar los índices de la columna
+
+% Predicado para obtener los índices del cuadro en el que está una casilla
+indices_cuadro(Index, Indices) :-
+    Fila is Index // 9,
+    Columna is Index mod 9,
+    CuadroFila is (Fila // 3) * 3,
+    CuadroColumna is (Columna // 3) * 3,
+    findall(I, 
+        (between(0, 2, DF), between(0, 2, DC), 
+         I is (CuadroFila + DF) * 9 + (CuadroColumna + DC)),
+        Indices).
+
+%-------------------------------Código nuevo----------------------------------------------
+
 lista_correcta(Lista) :-
     exclude(==(.), Lista, Numeros),  % Filtrar los valores no numéricos
     sort(Numeros, NumerosOrdenados), %ordena los valores númericos eliminando repetidos
     length(Numeros, L), % Obtiene la longitud de la lista original sin puntos
     length(NumerosOrdenados, L).  %Obtiene la longitud de la lista ordenada que debe ser igual que la anterior para sacar true
 
-extraer_filas([], []).
-extraer_filas(Sudoku, [Fila | Resto]) :-
-    length(Fila, 9),
-    append(Fila, RestoSudoku, Sudoku), %Fila: toma los primeros 9 elementos de Sudoku y RestoSudoku: contiene los elementos restantes (los siguientes 72, luego 63, 54, etc.).
-    extraer_filas(RestoSudoku, Resto). %Llamada recursiva con la parte restante (RestoSudoku).
-
-extraer_columnas(Sudoku, Columnas) :-
-    findall(Columna, (between(0, 8, N), %N toma valores de 0 a 8, representando los índices de las 9 columnas
-                      findall(Elem, (between(0, 8, M), %between(0, 8, M): Itera sobre las 9 filas
-                                     Index is M * 9 + N, %Calcula el índice del elemento en la lista unidimensional
-                                     nth0(Index, Sudoku, Elem)), Columna)), Columnas). %findall almacena todas las listas generadas en Columnas, que será la lista de columnas del Sudoku
-
-extraer_cuadrantes(Sudoku, Cuadrantes) :-
-    findall(Cuadrante, ( %findall recolecta todas las listas generadas en Cuadrantes, que será la lista de los 9 cuadrantes
-        member(R, [0, 3, 6]), member(C, [0, 3, 6]), %R y C representan las coordenadas de inicio de cada cuadrante 3x3
-        findall(Elem, (                            %Se toman los valores [0, 3, 6], que son las filas y columnas donde comienzan los 9 cuadrantes
-            between(0, 2, DR), between(0, 2, DC), %between(0, 2, DR): Itera sobre las 3 filas dentro del cuadrante y between(0, 2, DC): Itera sobre las 3 columnas dentro del cuadrante
-            Index is (R + DR) * 9 + (C + DC),  %Calcula la posición del elemento en la lista unidimensional
-            nth0(Index, Sudoku, Elem) %Extrae el elemento de la lista en la posición Index
-        ), Cuadrante)
-    ), Cuadrantes).
-
-verificar_secciones(Extraer, Nombre) :- %Extraer: Un predicado que extrae las secciones del Sudoku (puede ser extraer_filas, extraer_columnas o extraer_cuadrantes
+% Predicado para verificar las filas del Sudoku
+verificar_filas :- 
     sudoku2(Sudoku),
-    call(Extraer, Sudoku, Secciones), %Llama dinámicamente al predicado de extracción (call(Extraer, Sudoku, Secciones)) para obtener todas las filas, columnas o cuadrantes
-    verificar_secciones_aux(Secciones, 1, [], Nombre). %Nombre: Un string que indica el tipo de sección a verificar ('fila', 'columna' o 'cuadrante')
-    %Secciones: Lista de las secciones extraídas
-    %1: Número inicial de sección (para identificación en caso de error)
-    %[]: Lista vacía de errores (se irá llenando si hay problemas)
-    %Nombre: Tipo de sección (se usa para imprimir mensajes)
+    forall(between(0, 80, Index), (
+        indices_fila(Index, FilaIndices), % Obtener los índices de la fila en la que está el índice actual
+        findall(Element, (member(I, FilaIndices), nth0(I, Sudoku, Element)), Fila), % Extraer los elementos de la fila
+        (lista_correcta(Fila) -> 
+            true;
+            format('Error en la fila con índice ~w: ~w~n', [Index, Fila])) % Mostrar error si la fila no es correcta
+    )).
 
-verificar_secciones_aux([], _, [], _) :- writeln('Bien'). %Condición: Se han procesado todas las secciones ([]) y no se encontraron errores ([])
+% Predicado para verificar las columnas del Sudoku
+verificar_columnas :- 
+    sudoku2(Sudoku),
+    forall(between(0, 8, Columna), ( 
+        indices_columna(Columna, ColumnaIndices), % Obtener los índices de la columna
+        findall(Element, (member(I, ColumnaIndices), nth0(I, Sudoku, Element)), Columna), % Extraer los elementos de la columna
+        (lista_correcta(Columna) -> 
+            true;
+            format('Error en la columna con índice ~w: ~w~n', [Columna, Columna])) % Mostrar error si la columna no es correcta
+    )).
 
-verificar_secciones_aux([], _, Errores, Nombre) :- %Se imprime un mensaje con las secciones incorrectas:
-    format('Hay error(es) en la(s) ~w(s): ~w~n', [Nombre, Errores]). %~w representa un valor en la cadena de texto y [Nombre, Errores] inserta el tipo de sección (fila, columna o cuadrante) y la lista de errores
+% Predicado para verificar los cuadrantes del Sudoku
+verificar_cuadrantes :- 
+    sudoku2(Sudoku),
+    forall(between(0, 8, Cuadro), ( 
+        indices_cuadro(Cuadro, CuadroIndices), % Obtener los índices del cuadrante
+        findall(Element, (member(I, CuadroIndices), nth0(I, Sudoku, Element)), Cuadrante), % Extraer los elementos del cuadrante
+        (lista_correcta(Cuadrante) -> 
+            true;
+            format('Error en el cuadrante con índice ~w: ~w~n', [Cuadro, Cuadrante])) % Mostrar error si el cuadrante no es correcto
+    )).
 
-verificar_secciones_aux([Seccion | Resto], N, Errores, Nombre) :-  
-%Condición: Aún quedan secciones por verificar ([Seccion | Resto])
-%Acción: Se extrae la primera sección (Seccion) y se continúa con el resto (Resto)
-%N indica el número de la sección actual, y Errores acumula los errores encontrados
-    (   lista_correcta(Seccion) %Si la seccion es correcta
-    ->  N1 is N + 1, %Se incrementa el contador de la sección: N1 is N + 1
-        verificar_secciones_aux(Resto, N1, Errores, Nombre) %se llama recursivamente a verificar_secciones_aux/4 con el resto de secciones
-    ;   N1 is N + 1, %Si no es correcta, se incrementa el contador de seccion
-        append(Errores, [N], NuevosErrores), %Se agrega el número de la sección actual (N) a la lista de errores
-        verificar_secciones_aux(Resto, N1, NuevosErrores, Nombre)). %Se llama recursivamente a verificar_secciones_aux/4 con la nueva lista de errores
 
+% Predicado principal para verificar todo el Sudoku
 verificar_sudoku :-
-    verificar_secciones(extraer_filas, 'fila'),
-    verificar_secciones(extraer_columnas, 'columna'),
-    verificar_secciones(extraer_cuadrantes, 'cuadrante').
+    verificar_filas,
+    verificar_columnas,
+    verificar_cuadrantes,
+    writeln('El Sudoku es válido.').
