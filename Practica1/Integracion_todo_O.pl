@@ -324,16 +324,34 @@ indice_filas([1,2,3,10,11,12,19,20,21,4,5,6,13,14,15,22,23,24,7,8,9,16,17,18,25,
 
 
 
-% Predicado para imprimir el tablero de Sudoku
-imprimir_sudoku([]).
+% Predicado para imprimir el tablero de Sudoku con formato elegante
 imprimir_sudoku(Tablero) :-
-    imprimir_fila(Tablero, Resto),
-    imprimir_sudoku(Resto).
+    writeln('----------------------'),
+    imprimir_filas(Tablero, 1),
+    writeln('----------------------').
 
-% Predicado para imprimir una fila del tablero
-imprimir_fila(Tablero, Resto) :-
-    tomar(9, Tablero, Fila, Resto),
-    writeln(Fila).
+% Predicado para imprimir filas con separaciones
+imprimir_filas([], _).
+imprimir_filas(Tablero, Fila) :-
+    tomar(9, Tablero, FilaActual, Resto),
+    imprimir_fila(FilaActual, 1),
+    ( Fila mod 3 =:= 0, Resto \= [] -> writeln('----------------------') ; true ),
+    NuevaFila is Fila + 1,
+    imprimir_filas(Resto, NuevaFila).
+
+% Predicado para imprimir una fila con separaciones entre bloques 3x3
+imprimir_fila([], _) :- write('|'), nl.
+imprimir_fila([X|Xs], Columna) :-
+    ( Columna =:= 1 -> write('| ') ; true ),  
+    ( var(X) -> write('. ') ; format('~w ', [X]) ),
+    ( Columna mod 3 =:= 0, Xs \= [] -> write('| ') ; true ),
+    NuevaColumna is Columna + 1,
+    imprimir_fila(Xs, NuevaColumna).
+
+% Predicado principal para imprimir el Sudoku
+imprimir :-
+    sudoku25(Tablero),
+    imprimir_sudoku(Tablero).
 
 % Predicado para tomar los primeros N elementos de una lista
 tomar(0, L, [], L).
@@ -1267,7 +1285,6 @@ iterar_reglas_0_y_1_y_2_y_3(Sudoku, NuevoSudoku) :-
         iterar_reglas_0_y_1_y_2_y_3(SudokuIntermedio, NuevoSudoku)
     ;   NuevoSudoku = Sudoku  % Si no hubo cambios, el Sudoku está actualizado
     ).
-
 
 probar_reglas_0_y_1_y_2_y_3 :-
     % Obtiene el tablero de Sudoku
