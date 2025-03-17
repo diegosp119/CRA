@@ -1,3 +1,6 @@
+% -------------------------------------------------------------------------------
+% Definición de Tableros (Ejemplos)
+% -------------------------------------------------------------------------------
 sudoku2([
     9,2,3,4,5,6,7,8,9,  
     4,5,6,7,8,9,1,2,3,  
@@ -40,7 +43,6 @@ sudoku([
 
 % -------------------------------------------------------------------------------
 % numero/1: Hechos que representan los dígitos válidos en un Sudoku (1 a 9).
-% Esto nos permite iterar fácilmente sobre los números posibles.
 % -------------------------------------------------------------------------------
 numero(1).
 numero(2).
@@ -54,85 +56,68 @@ numero(9).
 
 % -------------------------------------------------------------------------------
 % miembro_fila/3: Comprueba si un número (Num) ya se encuentra en la misma fila
-% de la casilla indicada por Index dentro del Sudoku.
-%  - Sudoku: Lista con los 81 elementos (9x9) del tablero.
-%  - Index: Posición (0 a 80) de la casilla.
-%  - Num: Número a verificar.
+% de la casilla indicada por Index.
 % -------------------------------------------------------------------------------
 miembro_fila(Sudoku, Index, Num) :-
-    Fila is Index // 9,         % Calcula la fila a la que pertenece la casilla
-    Inicio is Fila * 9,         % Índice inicial de la fila
-    Fin is Inicio + 8,          % Índice final de la fila
-    between(Inicio, Fin, I),    % Itera sobre los índices de la fila
-    nth0(I, Sudoku, Num).       % Verifica si Num está presente en dicha posición
+    Fila is Index // 9,
+    Inicio is Fila * 9,
+    Fin is Inicio + 8,
+    between(Inicio, Fin, I),
+    nth0(I, Sudoku, Num).
 
 % -------------------------------------------------------------------------------
 % miembro_columna/3: Comprueba si un número (Num) ya se encuentra en la misma
-% columna de la casilla indicada por Index dentro del Sudoku.
-%  - Sudoku: Lista con los 81 elementos del tablero.
-%  - Index: Posición (0 a 80) de la casilla.
-%  - Num: Número a verificar.
+% columna de la casilla indicada por Index.
 % -------------------------------------------------------------------------------
 miembro_columna(Sudoku, Index, Num) :-
-    Columna is Index mod 9,     % Calcula la columna a la que pertenece la casilla
-    between(0, 8, Fila),       % Itera sobre las filas (0 a 8)
-    I is Fila * 9 + Columna,    % Cálculo del índice en la lista para esa columna
-    nth0(I, Sudoku, Num).       % Verifica si Num está presente en dicha posición
+    Columna is Index mod 9,
+    between(0, 8, Fila),
+    I is Fila * 9 + Columna,
+    nth0(I, Sudoku, Num).
 
 % -------------------------------------------------------------------------------
 % miembro_cuadro/3: Comprueba si un número (Num) ya se encuentra en el mismo
-% cuadro 3x3 de la casilla indicada por Index dentro del Sudoku.
-%  - Sudoku: Lista con los 81 elementos del tablero.
-%  - Index: Posición (0 a 80) de la casilla.
-%  - Num: Número a verificar.
+% cuadro 3x3 de la casilla indicada por Index.
 % -------------------------------------------------------------------------------
 miembro_cuadro(Sudoku, Index, Num) :-
-    Fila is Index // 9,                 % Calcula la fila
-    Columna is Index mod 9,             % Calcula la columna
-    CuadroFila is (Fila // 3) * 3,      % Fila inicial del bloque 3x3
-    CuadroColumna is (Columna // 3) * 3,% Columna inicial del bloque 3x3
-    between(0, 2, DF),                  % Desplazamiento de fila dentro del bloque
-    between(0, 2, DC),                  % Desplazamiento de columna dentro del bloque
+    Fila is Index // 9,
+    Columna is Index mod 9,
+    CuadroFila is (Fila // 3) * 3,
+    CuadroColumna is (Columna // 3) * 3,
+    between(0, 2, DF),
+    between(0, 2, DC),
     I is (CuadroFila + DF) * 9 + (CuadroColumna + DC),
-    nth0(I, Sudoku, Num).               % Verifica si Num está en el bloque 3x3
+    nth0(I, Sudoku, Num).
 
 % -------------------------------------------------------------------------------
-% casilla_vacia/1: Verifica si una casilla (Casilla) está vacía,
-% es decir, si no contiene un número (no es un integer).
+% casilla_vacia/1: Verifica si una casilla está vacía (no es un número).
 % -------------------------------------------------------------------------------
 casilla_vacia(Casilla) :-
     \+ number(Casilla).
 
 % -------------------------------------------------------------------------------
-% posibilidades_casilla/3: Obtiene la lista de posibilidades para una casilla
-%  - Sudoku: Lista con los 81 elementos del tablero.
-%  - Index: Posición (0 a 80) de la casilla.
-%  - Posibilidades: Lista de números posibles para esa casilla, considerando
-%    que no estén en su fila, columna o bloque 3x3.
+% posibilidades_casilla/3: Obtiene la lista de posibilidades para una casilla.
 % -------------------------------------------------------------------------------
 posibilidades_casilla(Sudoku, Index, Posibilidades) :-
-    nth0(Index, Sudoku, Casilla),                     % Obtiene el contenido de la casilla
-    (   casilla_vacia(Casilla) ->                     % Si la casilla está vacía
-        findall(Num, (numero(Num),                    % Buscamos todos los números válidos
-                      \+ miembro_fila(Sudoku, Index, Num),
-                      \+ miembro_columna(Sudoku, Index, Num),
-                      \+ miembro_cuadro(Sudoku, Index, Num)
-                     ), Posibilidades)
-    ;   Posibilidades = []                             % Si no está vacía, no hay posibilidades
+    nth0(Index, Sudoku, Casilla),
+    (   casilla_vacia(Casilla) ->
+        findall(Num,
+                (numero(Num),
+                 \+ miembro_fila(Sudoku, Index, Num),
+                 \+ miembro_columna(Sudoku, Index, Num),
+                 \+ miembro_cuadro(Sudoku, Index, Num)
+                ),
+                Posibilidades)
+    ;   Posibilidades = []  % Si la casilla ya tiene un número, no hay posibilidades.
     ).
 
 % -------------------------------------------------------------------------------
-% generar_posibilidades/2: Genera la lista de posibilidades para todas las
-% casillas del Sudoku (las vacías tendrán una lista de números, las llenas, lista vacía).
+% generar_posibilidades/2: Genera la lista de posibilidades para cada casilla del Sudoku.
 % -------------------------------------------------------------------------------
 generar_posibilidades(Sudoku, Posibilidades) :-
     generar_posibilidades(Sudoku, 0, Posibilidades).
 
-% Caso base: cuando Index = 81, hemos verificado las 81 posiciones (9x9).
 generar_posibilidades(_, 81, []).
-
-% Caso recursivo: calcula las posibilidades para la casilla en 'Index'
-% y luego avanza a la siguiente casilla.
 generar_posibilidades(Sudoku, Index, [P|Resto]) :-
     Index < 81,
     posibilidades_casilla(Sudoku, Index, P),
@@ -140,61 +125,41 @@ generar_posibilidades(Sudoku, Index, [P|Resto]) :-
     generar_posibilidades(Sudoku, NextIndex, Resto).
 
 % -------------------------------------------------------------------------------
-% generar_lista_posibilidades/0: Genera e imprime (por consola) la lista de
-% posibilidades para cada casilla del Sudoku definido por el predicado sudoku/1.
+% Verificación Extendida Considerando las Posibilidades Precalculadas
 % -------------------------------------------------------------------------------
-generar_lista_posibilidades :-
-    sudoku(Tablero),                     % Obtenemos el tablero (definido en sudoku/1)
-    generar_posibilidades(Tablero, Posibilidades),
-    writeln(Posibilidades).             % Imprime la lista de posibilidades
-
+% Ahora, en region_valida se verifica que para cada casilla vacía la lista
+% de posibilidades proporcionada coincida exactamente con las posibilidades calculadas.
+% Esto detecta errores como la inclusión de un 9 cuando no debe aparecer.
 % -------------------------------------------------------------------------------
-% Verificación Extendida Considerando Posibilidades
-% -------------------------------------------------------------------------------
-
-% -------------------------------------------------------------------------------
-% region_valida/2: Verifica que una región (fila, columna o cuadro 3x3) sea válida
-% según las reglas:
-%  1. No hay números repetidos en las casillas fijas de la región.
-%  2. Cada casilla vacía en la región debe tener al menos una posibilidad.
-%  3. Cada número que falta en la región debe poder colocarse en al menos una
-%     de las casillas vacías (es decir, aparecer en su lista de posibilidades).
-%  - Indices: Lista de posiciones (0 a 80) que forman la región (fila/columna/bloque).
-%  - Sudoku: Lista con los 81 elementos del tablero.
-% -------------------------------------------------------------------------------
-region_valida(Indices, Sudoku) :-
-    % Extrae los números fijos de la región y verifica que no se repitan
+region_valida(Indices, Sudoku, PosList) :-
+    % Extraer los números fijos de la región y verificar que no se repitan.
     findall(E, (member(I, Indices), nth0(I, Sudoku, E), number(E)), Fijos),
     sort(Fijos, FijosSorted),
     length(Fijos, LFix),
     length(FijosSorted, LFixSorted),
-    LFix =:= LFixSorted,  % Si hay duplicados, las longitudes no coinciden
-
-    % Cada casilla vacía debe tener alguna posibilidad
+    LFix =:= LFixSorted,
+    % Para cada casilla vacía, comprobamos que su lista de posibilidades
+    % es exactamente la que se obtiene de calcularlas.
     forall((member(I, Indices), nth0(I, Sudoku, E), \+ number(E)),
-           (posibilidades_casilla(Sudoku, I, Poss), Poss \= [])),
-
-    % Cada número que falta debe poder ponerse en al menos una de las casillas vacías
-    forall((between(1, 9, Num), \+ member(Num, FijosSorted)),
-           (member(I, Indices),
-            nth0(I, Sudoku, E), \+ number(E),
-            posibilidades_casilla(Sudoku, I, Poss),
-            member(Num, Poss)
+           ( nth0(I, PosList, Poss),
+             posibilidades_casilla(Sudoku, I, CorrectPoss),
+             sort(Poss, SortedPoss),
+             sort(CorrectPoss, SortedCorrect),
+             SortedPoss == SortedCorrect
            )
-    ).
+          ).
 
 % -------------------------------------------------------------------------------
-% verificar_filas_poss/1: Verifica que todas las filas del Sudoku sean válidas
-% con respecto a las posibilidades de cada casilla.
-%  - Sudoku: Lista con los 81 elementos del tablero.
+% verificar_filas_poss/2: Verifica que todas las filas sean válidas
+% considerando las posibilidades precalculadas.
 % -------------------------------------------------------------------------------
-verificar_filas_poss(Sudoku) :-
-    forall(between(0, 8, Row),                  % Recorremos las filas (0 a 8)
+verificar_filas_poss(Sudoku, PosList) :-
+    forall(between(0, 8, Row),
            (
              Inicio is Row * 9,
              Fin is Inicio + 8,
-             findall(I, between(Inicio, Fin, I), Indices),  % Índices de la fila actual
-             ( region_valida(Indices, Sudoku) ->
+             findall(I, between(Inicio, Fin, I), Indices),
+             ( region_valida(Indices, Sudoku, PosList) ->
                  true
              ;   format('Error en la fila ~w~n', [Row])
              )
@@ -202,15 +167,14 @@ verificar_filas_poss(Sudoku) :-
     ).
 
 % -------------------------------------------------------------------------------
-% verificar_columnas_poss/1: Verifica que todas las columnas del Sudoku
-% sean válidas según las posibilidades de cada casilla.
-%  - Sudoku: Lista con los 81 elementos del tablero.
+% verificar_columnas_poss/2: Verifica que todas las columnas sean válidas
+% considerando las posibilidades precalculadas.
 % -------------------------------------------------------------------------------
-verificar_columnas_poss(Sudoku) :-
-    forall(between(0, 8, Col),                 % Recorremos las columnas (0 a 8)
+verificar_columnas_poss(Sudoku, PosList) :-
+    forall(between(0, 8, Col),
            (
              findall(I, (between(0,8,Row), I is Row * 9 + Col), Indices),
-             ( region_valida(Indices, Sudoku) ->
+             ( region_valida(Indices, Sudoku, PosList) ->
                  true
              ;   format('Error en la columna ~w~n', [Col])
              )
@@ -218,15 +182,18 @@ verificar_columnas_poss(Sudoku) :-
     ).
 
 % -------------------------------------------------------------------------------
-% verificar_cuadrantes_poss/1: Verifica que todos los cuadros 3x3 del Sudoku
-% sean válidos según las posibilidades de cada casilla.
-%  - Sudoku: Lista con los 81 elementos del tablero.
+% verificar_cuadrantes_poss/2: Verifica que todos los bloques 3x3 sean válidos
+% considerando las posibilidades precalculadas.
 % -------------------------------------------------------------------------------
-verificar_cuadrantes_poss(Sudoku) :-
+verificar_cuadrantes_poss(Sudoku, PosList) :-
     forall((member(BR, [0,3,6]), member(BC, [0,3,6])),
            (
-             findall(I, (between(0,2,DR), between(0,2,DC), I is (BR+DR)*9+(BC+DC)), Indices),
-             ( region_valida(Indices, Sudoku) ->
+             findall(I,
+                     (between(0,2,DR), between(0,2,DC),
+                      I is (BR+DR)*9+(BC+DC)
+                     ),
+                     Indices),
+             ( region_valida(Indices, Sudoku, PosList) ->
                  true
              ;   format('Error en el cuadro con esquina en (~w,~w)~n', [BR, BC])
              )
@@ -235,12 +202,36 @@ verificar_cuadrantes_poss(Sudoku) :-
 
 % -------------------------------------------------------------------------------
 % verificar_sudoku_poss/0: Predicado principal para verificar el estado actual
-% del Sudoku considerando las posibilidades de cada casilla.
-% Realiza las verificaciones de filas, columnas y bloques. Si todo es válido,
-% muestra un mensaje de confirmación.
+% del Sudoku (en este caso, sudoku1) considerando las posibilidades precalculadas.
+% Se genera la lista de posibilidades, se imprime, se introduce un error
+% añadiendo un 9 extra en la lista de posibilidades de la primera casilla vacía,
+% y luego se procede a verificar filas, columnas y bloques.
 % -------------------------------------------------------------------------------
-verificar_sudoku_poss:-
-    sudoku2(Sudoku),
-    verificar_filas_poss(Sudoku),
-    verificar_columnas_poss(Sudoku),
-    verificar_cuadrantes_poss(Sudoku).
+verificar_sudoku_poss :-
+    sudoku1(Sudoku),
+    generar_posibilidades(Sudoku, PosListOriginal),
+    writeln('Lista de posibilidades original:'),
+    writeln(PosListOriginal),
+    
+    % Introducir un error: Añadir un 9 a la lista de posibilidades de la primera casilla vacía
+    PosListOriginal = [P1 | RestoPosList],
+    append(P1, [9], P1Erroneo),
+    PosListErronea = [P1Erroneo | RestoPosList],
+    
+    writeln('Lista de posibilidades modificada (con error):'),
+    writeln(PosListErronea),
+    
+    % Verificar el Sudoku con la lista de posibilidades errónea.
+    verificar_filas_poss(Sudoku, PosListErronea),
+    verificar_columnas_poss(Sudoku, PosListErronea),
+    verificar_cuadrantes_poss(Sudoku, PosListErronea),
+    writeln('El Sudoku es válido considerando las posibilidades.').
+    
+% -------------------------------------------------------------------------------
+% generar_lista_posibilidades/0: Genera e imprime por consola la lista de posibilidades
+% para cada casilla del Sudoku definido en sudoku/1.
+% -------------------------------------------------------------------------------
+generar_lista_posibilidades :-
+    sudoku1(Tablero),
+    generar_posibilidades(Tablero, Posibilidades),
+    writeln(Posibilidades).
