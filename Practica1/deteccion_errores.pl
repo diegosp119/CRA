@@ -1,5 +1,5 @@
 sudoku2([
-    1,2,3,4,5,6,7,8,9,  
+    9,2,3,4,5,6,7,8,9,  
     4,5,6,7,8,9,1,2,3,  
     7,8,9,1,2,3,4,5,6,  
     2,3,4,5,6,7,8,9,1,  
@@ -196,7 +196,7 @@ verificar_filas_poss(Sudoku) :-
              findall(I, between(Inicio, Fin, I), Indices),  % Índices de la fila actual
              ( region_valida(Indices, Sudoku) ->
                  true
-             ;   format('Error en la fila ~w: índices ~w~n', [Row, Indices])
+             ;   format('Error en la fila ~w~n', [Row])
              )
            )
     ).
@@ -212,7 +212,7 @@ verificar_columnas_poss(Sudoku) :-
              findall(I, (between(0,8,Row), I is Row * 9 + Col), Indices),
              ( region_valida(Indices, Sudoku) ->
                  true
-             ;   format('Error en la columna ~w: índices ~w~n', [Col, Indices])
+             ;   format('Error en la columna ~w~n', [Col])
              )
            )
     ).
@@ -228,7 +228,7 @@ verificar_cuadrantes_poss(Sudoku) :-
              findall(I, (between(0,2,DR), between(0,2,DC), I is (BR+DR)*9+(BC+DC)), Indices),
              ( region_valida(Indices, Sudoku) ->
                  true
-             ;   format('Error en el cuadro con esquina en (~w,~w): índices ~w~n', [BR, BC, Indices])
+             ;   format('Error en el cuadro con esquina en (~w,~w)~n', [BR, BC])
              )
            )
     ).
@@ -240,7 +240,7 @@ verificar_cuadrantes_poss(Sudoku) :-
 % muestra un mensaje de confirmación.
 % -------------------------------------------------------------------------------
 verificar_sudoku_poss:-
-    sudoku(Sudoku),
+    sudoku2(Sudoku),
     verificar_filas_poss(Sudoku),
     verificar_columnas_poss(Sudoku),
     verificar_cuadrantes_poss(Sudoku).
