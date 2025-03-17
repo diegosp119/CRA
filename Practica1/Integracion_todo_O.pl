@@ -326,16 +326,16 @@ indice_filas([1,2,3,10,11,12,19,20,21,4,5,6,13,14,15,22,23,24,7,8,9,16,17,18,25,
 
 % Predicado para imprimir el tablero de Sudoku con formato elegante
 imprimir_sudoku(Tablero) :-
-    writeln('----------------------'),
+    writeln('-------------------------'),
     imprimir_filas(Tablero, 1),
-    writeln('----------------------').
+    writeln('-------------------------').
 
 % Predicado para imprimir filas con separaciones
 imprimir_filas([], _).
 imprimir_filas(Tablero, Fila) :-
     tomar(9, Tablero, FilaActual, Resto),
     imprimir_fila(FilaActual, 1),
-    ( Fila mod 3 =:= 0, Resto \= [] -> writeln('----------------------') ; true ),
+    ( Fila mod 3 =:= 0, Resto \= [] -> writeln('-------------------------') ; true ),
     NuevaFila is Fila + 1,
     imprimir_filas(Resto, NuevaFila).
 
@@ -350,7 +350,7 @@ imprimir_fila([X|Xs], Columna) :-
 
 % Predicado principal para imprimir el Sudoku
 imprimir :-
-    sudoku25(Tablero),
+    sudoku20(Tablero),
     imprimir_sudoku(Tablero).
 
 % Predicado para tomar los primeros N elementos de una lista
