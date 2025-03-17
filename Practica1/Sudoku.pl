@@ -466,6 +466,20 @@ imprimir_posibilidades([P|Ps]) :-
     writeln(P),
     imprimir_posibilidades(Ps).
 
+
+numero_casillas_vacias(_, 81, Contador, Valor_Final):-
+    Valor_Final is Contador.
+
+numero_casillas_vacias([Casilla|Resto], Index, Contador, Valor_Final):-
+    (casilla_vacia(Casilla)-> 
+    Contador_Nuevo is Contador + 1
+    ;
+    Contador_Nuevo is Contador
+    ),
+    SigIndex is Index+1,
+    numero_casillas_vacias(Resto, SigIndex, Contador_Nuevo, Valor_Final).
+
+
 resolver_regla_0(Sudoku, NuevoSudoku, CountIn, CountOut) :-
     generar_posibilidades(Sudoku, Posibilidades),
     aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku, CountIn, CountOut).
@@ -476,6 +490,10 @@ resolver_regla_0(Sudoku, NuevoSudoku) :-
 
 aplicar_regla_0(Sudoku, Posibilidades, NuevoSudoku, CountIn, CountOut) :-
     actualizar_sudoku(Sudoku, Posibilidades, SudokuActualizado),
+    numero_casillas_vacias(Sudoku, 0, 0, Numero_vacios),
+    numero_casillas_vacias(SudokuActualizado, 0, 0, Numero_vacios_act),
+    Numero_cambios is Numero_vacios-Numero_vacios_act,
+    format('Se realizaron ~w cambios en la iteracion ~w de la Regla 0 ~n', [Numero_cambios, CountIn]),
     NewCount is CountIn + 1,
     (   Sudoku \= SudokuActualizado ->
         resolver_regla_0(SudokuActualizado, NuevoSudoku, NewCount, CountOut)
@@ -770,6 +788,13 @@ probar_regla_1 :-
 %% Aplicar la Regla 0 (iterativa "0_1") con contador
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Esto no se usa
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 aplicar_regla_0_1(Sudoku, Posibilidades, NuevoSudoku, CountIn, CountOut) :-
     actualizar_sudoku(Sudoku, Posibilidades, SudokuActualizado),
     NewCount is CountIn + 1,
@@ -778,6 +803,10 @@ aplicar_regla_0_1(Sudoku, Posibilidades, NuevoSudoku, CountIn, CountOut) :-
     ;   NuevoSudoku = Sudoku,
         CountOut = NewCount
     ).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Esto no se usa 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Wrapper sin contador explícito para aplicar_regla_0_1
 aplicar_regla_0_1(Sudoku, Posibilidades, NuevoSudoku) :-
@@ -803,7 +832,7 @@ resolver_regla_1(Posibilidades, Fin) :-
 resolver_reglas_0_y_1(Sudoku, NuevoSudoku, CountIn, CountOut) :-
     generar_posibilidades(Sudoku, Posibilidades),
     resolver_regla_1(Posibilidades, Fin, CountIn, CountTemp),
-    aplicar_regla_0_1(Sudoku, Fin, NuevoSudoku, CountTemp, CountOut).
+    aplicar_regla_0(Sudoku, Fin, NuevoSudoku, CountTemp, CountOut).
 
 % Wrapper sin contador explícito para resolver_reglas_0_y_1
 resolver_reglas_0_y_1(Sudoku, NuevoSudoku) :-
@@ -1067,8 +1096,9 @@ iterar_reglas_0_y_2(Sudoku, NuevoSudoku, IterCountIn, IterCountOut, R0CountIn, R
     ).
 
 % Wrapper que inicia ambos contadores en 0 y devuelve IterCount, R0Count y R2Count
-iterar_reglas_0_y_2(Sudoku, NuevoSudoku, IterCount, R0Count, R2Count) :-
+iterar_reglas_0_y_2(Sudoku, NuevoSudoku, IterCount) :-
     iterar_reglas_0_y_2(Sudoku, NuevoSudoku, 0, IterCount, 0, R0Count, 0, R2Count).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Predicado de prueba para las Reglas 0 y 2 con contadores
@@ -1378,7 +1408,7 @@ iterar_reglas_0_y_3(Sudoku, NuevoSudoku,
     ).
 
 % Wrapper que inicia todos los contadores en 0
-iterar_reglas_0_y_3(Sudoku, NuevoSudoku, IterCount, R0Count, R3Count) :-
+iterar_reglas_0_y_3(Sudoku, NuevoSudoku, IterCount) :-
     iterar_reglas_0_y_3(Sudoku, NuevoSudoku, 0, IterCount, 0, R0Count, 0, R3Count).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1702,30 +1732,23 @@ interfaz_menu(Sudoku) :-
 % Aplicación de cada regla (con contador)
 %------------------------------------------
 
-% Opción 0: Regla 0
-aplicar_regla_interactiva(0, Sudoku, NuevoSudoku) :-
-    writeln('Aplicando Regla 0...'),
-    resolver_regla_0(Sudoku, NuevoSudoku, 0, Count0),
-    format('Se realizaron ~w iteraciones de la Regla 0.~n', [Count0]).
-
-% Opción 1: Regla 1
-aplicar_regla_interactiva(1, Sudoku, NuevoSudoku) :-
-    writeln('Aplicando Regla 1...'),
-    iterar_reglas_0_y_1(Sudoku, NuevoSudoku, Count1),
-    format('Se realizaron ~w iteraciones de la Regla 1.~n', [Count1]).
-
-% Opción 2: Regla 2
-aplicar_regla_interactiva(2, Sudoku, NuevoSudoku) :-
-    writeln('Aplicando Regla 2...'),
-    iterar_reglas_0_y_2(Sudoku, NuevoSudoku, Count2),
-    format('Se realizaron ~w iteraciones de la Regla 2.~n', [Count2]).
-
-% Opción 3: Regla 3
-aplicar_regla_interactiva(3, Sudoku, NuevoSudoku) :-
-    writeln('Aplicando Regla 3...'),
-    iterar_reglas_0_y_3(Sudoku, NuevoSudoku, Count3),
-    format('Se realizaron ~w iteraciones de la Regla 3.~n', [Count3]).
-
-% Si la opción no es válida, se mantiene el Sudoku sin cambios.
-aplicar_regla_interactiva(_, Sudoku, Sudoku) :-
-    writeln('Opción no válida, no se aplicó ninguna regla.').
+aplicar_regla_interactiva(Opcion, Sudoku, NuevoSudoku) :-
+    ( Opcion =:= 0 ->
+        writeln('Aplicando Regla 0...'),
+        resolver_regla_0(Sudoku, NuevoSudoku, 0, Count0),
+        format('Se realizaron ~w iteraciones de la Regla 0.~n', [Count0])
+    ; Opcion =:= 1 ->
+        writeln('Aplicando Regla 1...'),
+        iterar_reglas_0_y_1(Sudoku, NuevoSudoku, Count1),
+        format('Se realizaron ~w iteraciones de la Regla 1.~n', [Count1])
+    ; Opcion =:= 2 ->
+        writeln('Aplicando Regla 2...'),
+        iterar_reglas_0_y_2(Sudoku, NuevoSudoku, Count2),
+        format('Se realizaron ~w iteraciones de la Regla 2.~n', [Count2])
+    ; Opcion =:= 3 ->
+        writeln('Aplicando Regla 3...'),
+        iterar_reglas_0_y_3(Sudoku, NuevoSudoku, Count3),
+        format('Se realizaron ~w iteraciones de la Regla 3.~n', [Count3])
+    ;   writeln('Opción no válida, no se aplicó ninguna regla.'),
+        NuevoSudoku = Sudoku
+    ).
