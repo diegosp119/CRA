@@ -224,14 +224,5 @@ verificar_sudoku_poss :-
     % Verificar el Sudoku con la lista de posibilidades errónea.
     verificar_filas_poss(Sudoku, PosListErronea),
     verificar_columnas_poss(Sudoku, PosListErronea),
-    verificar_cuadrantes_poss(Sudoku, PosListErronea),
-    writeln('El Sudoku es válido considerando las posibilidades.').
-    
-% -------------------------------------------------------------------------------
-% generar_lista_posibilidades/0: Genera e imprime por consola la lista de posibilidades
-% para cada casilla del Sudoku definido en sudoku/1.
-% -------------------------------------------------------------------------------
-generar_lista_posibilidades :-
-    sudoku1(Tablero),
-    generar_posibilidades(Tablero, Posibilidades),
-    writeln(Posibilidades).
+    verificar_cuadrantes_poss(Sudoku, PosListErronea).
+
