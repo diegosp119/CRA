@@ -316,6 +316,7 @@ sudoku25([
 
 % Cargamos el archivo que contiene la lógica de las reglas
 :- consult('reglas.pl').
+:- consult('deteccion_errores.pl').
 
 %interfaz principal
 main :- 
@@ -323,6 +324,7 @@ main :-
     writeln('1. Ingresar un sudoku'),
     writeln('2. Realizar pruebas de reglas'),
     writeln('3. Probar sudokus por nivel de dificultad'),
+    writeln('4. Prueba de deteccion de errores'),
     read(Opcion),
     (   Opcion == 1
     ->  interfaz_interactiva
@@ -330,6 +332,8 @@ main :-
     ->  interfaz_prueba
     ;   Opcion == 3
     ->  probar_contar_sudokus_por_nivel
+    ;   Opcion == 4
+    ->  verificar_sudoku_poss
     ).
 
 %interfaz de pruebas
