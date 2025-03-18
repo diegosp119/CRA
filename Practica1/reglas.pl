@@ -669,9 +669,6 @@ actualizar_posibilidades_con_unicos(Posibilidades, 82,_,_,Posibilidades_Fin) :-
 
 % Caso recursivo: procesar una casilla y actualizarla si corresponde
 actualizar_posibilidades_con_unicos(Posibilidades, Indice, Indice_Guia, Unicos, Posibilidades_Fin) :-
-    % Extraer el valor de las posibles posibilidades en el índice actual
-    nth1(Indice, Posibilidades, ListaPosibilidades),
-    %writeln("ListaPosibilidades"), %writeln(ListaPosibilidades),
     % Comprobar si hay un valor único en FilaUnicos, ColumnaUnicos o CuadradoUnicos
     (   nth1(Indice, Unicos, ValorUnicos),
         ValorUnicos \= [] ->( % Si la lista no está vacía
@@ -698,9 +695,6 @@ actualizar_posibilidades_con_unicos(Posibilidades, Indice, Indice_Guia, Unicos, 
         )
     ;
         % Llamada recursiva para procesar el siguiente índice
-        %Reemplazo = ListaPosibilidades,
-        %nth1(Indice,Indice_Guia,Valor_indice_en_posibilidades),
-        %replace(Posibilidades, Valor_indice_en_posibilidades, Reemplazo, NuevaPosibilidadesParcial),
         IndiceSiguiente is Indice + 1,
         actualizar_posibilidades_con_unicos(Posibilidades,IndiceSiguiente, Indice_Guia ,Unicos,Posibilidades_Fin)
     ).

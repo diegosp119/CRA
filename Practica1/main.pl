@@ -316,6 +316,73 @@ sudoku25([
 
 % Cargamos el archivo que contiene la lógica de las reglas
 :- consult('reglas.pl').
+:- consult('deteccion_errores.pl').
+
+%interfaz principal
+main :- 
+    writeln('Que desea hacer: '),
+    writeln('1. Ingresar un sudoku'),
+    writeln('2. Realizar pruebas de reglas'),
+    writeln('3. Probar sudokus por nivel de dificultad'),
+    writeln('4. Prueba de deteccion de errores'),
+    read(Opcion),
+    (   Opcion == 1
+    ->  interfaz_interactiva
+    ;   Opcion == 2
+    ->  interfaz_prueba
+    ;   Opcion == 3
+    ->  probar_contar_sudokus_por_nivel
+    ;   Opcion == 4
+    ->  verificar_sudoku_poss
+    ).
+
+%interfaz de pruebas
+
+interfaz_prueba :-
+    writeln('Que sudoku desea probar: '),
+    writeln('1. probar_regla_0'),
+    writeln('2. probar_regla_1'),
+    writeln('3. probar_regla_2'),
+    writeln('4. probar_regla_3'),
+    writeln('5. probar_reglas_0_y_1'),
+    writeln('6. probar_reglas_0_y_2'),
+    writeln('7. probar_reglas_0_y_3'),
+    writeln('8. probar_reglas_0_1_y_2'),
+    writeln('9. probar_reglas_0_1_2_y_3'),
+    read(Opcion),
+    (   Opcion == 1
+    -> probar_regla_0,
+    writeln('Regla 0 aplicada')
+    ;   Opcion == 2
+    -> probar_regla_1,
+    writeln('Regla 1 aplicada')
+    ;   Opcion == 3
+    -> probar_regla_2,
+    writeln('Regla 2 aplicada')
+    ;   Opcion == 4
+    -> probar_regla_3,
+    writeln('Regla 3 aplicada')
+    ;   Opcion == 5
+    -> probar_reglas_0_y_1,
+    writeln('Reglas 0 y 1 aplicadas')
+    ;   Opcion == 6
+    -> probar_reglas_0_y_2,
+    writeln('Reglas 0 y 2 aplicadas')
+    ;   Opcion == 7
+    -> probar_reglas_0_y_3,
+    writeln('Reglas 0 y 3 aplicadas')
+    ;   Opcion == 8
+    -> probar_reglas_0_y_1_y_2,
+    writeln('Reglas 0, 1 y 2 aplicadas')
+    ;   Opcion == 9
+    -> probar_reglas_0_y_1_y_2_y_3,
+    writeln('Reglas 0, 1, 2 y 3 aplicadas')
+    ).
+
+
+
+
+
 
 
 
