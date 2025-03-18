@@ -319,12 +319,14 @@ sudoku25([
 
 
 
-% interfaz interactiva 
 interfaz_interactiva :-
     writeln('Ingrese el Sudoku como una lista de 81 elementos (usar . para celdas vacías):'),
     read(Sudoku),
     (   length(Sudoku, 81)
-    ->  interfaz_menu(Sudoku)
+    ->  (   validar_sudoku(Sudoku)
+        ->  interfaz_menu(Sudoku)
+        ;   writeln('Error: La lista contiene elementos no válidos. Solo se permiten números entre 1 y 9 o el caracter ".".')
+        )
     ;   writeln('Error: La lista ingresada debe tener 81 elementos.')
     ).
 
