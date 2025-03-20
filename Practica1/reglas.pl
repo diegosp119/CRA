@@ -611,17 +611,12 @@ filtrar_unicos([_|T], Conteo, Rest) :-
 eliminar_repetidos_global([], _, []).
 eliminar_repetidos_global([Lista|Resto], Conteo, [ListaFiltrada|RestoFiltrado]) :-
     filtrar_unicos(Lista, Conteo, ListaFiltrada),
-    %writeln("Lista Filtrada: "), %writeln(ListaFiltrada),
     eliminar_repetidos_global(Resto, Conteo, RestoFiltrado).
 
 % Predicado principal para limpiar la lista de repetidos globales
 eliminar_repetidos(Listas, Resultado) :-
     contar_ocurrencias(Listas, Conteo),
     eliminar_repetidos_global(Listas, Conteo, Resultado).
-
-
-
-
 
 
 % Eliminar repetidos dentro de las listas de filas, columnas y cuadrados
@@ -632,24 +627,12 @@ eliminar_repetidos_de_las_listas([Lista|Rest], Indice, Valores, Def, Lista_Defin
     % Acceder a los valores de la lista a través de los índices
    
     obtener_valores_por_indices(Lista, Valores, Valores_Extraidos),
-
-   
-
    
     eliminar_repetidos(Valores_Extraidos, ListaSinRepetidos),
-    
-    % Mostrar la lista sin repetidos
-    %writeln('Lista sin repetidos:'),
-    %writeln(ListaSinRepetidos),
 
     % Agregar los valores de ListaSinRepetidos a Def
     append(Def, ListaSinRepetidos, DefActualizado),
 
-    % Imprimir la lista de acumulación
-    %writeln('Def actualizada:'),
-    %writeln(DefActualizado),
-
-    %CONTROLCHECKHASTAAQUI
     Nuevo_Indice is Indice + 1,
     % Continuar con las siguientes listas
     eliminar_repetidos_de_las_listas(Rest, Nuevo_Indice, Valores, DefActualizado, Lista_Definitiva).
@@ -664,8 +647,6 @@ eliminar_repetidos_de_las_listas([Lista|Rest], Indice, Valores, Def, Lista_Defin
 actualizar_posibilidades_con_unicos(Posibilidades, 82,_,_,Posibilidades_Fin) :-
     % Recorrer todas las casillas del Sudoku (de 1 a 81)
     Posibilidades_Fin=Posibilidades.
-    %writeln("Posibilidades_Fin"),
-    %imprimir_sudoku(Posibilidades_Fin).
 
 % Caso recursivo: procesar una casilla y actualizarla si corresponde
 actualizar_posibilidades_con_unicos(Posibilidades, Indice, Indice_Guia, Unicos, Posibilidades_Fin) :-
@@ -675,16 +656,8 @@ actualizar_posibilidades_con_unicos(Posibilidades, Indice, Indice_Guia, Unicos, 
             length(ValorUnicos, 1) ->(
                 ValorUnicos = [X]  % Solo si tiene exactamente un elemento y no está vacía
                 ->  Reemplazo = [X],
-                %writeln("ValorUnicos"),
-                %writeln(ValorUnicos),
                 nth1(Indice,Indice_Guia,Valor_indice_en_posibilidades),
-                %writeln("Indice"),
-                %writeln(Valor_indice_en_posibilidades),
-                % Reemplazar el valor en la lista de Posibilidades
                 replace(Posibilidades, Valor_indice_en_posibilidades, Reemplazo, NuevaPosibilidadesParcial),
-                %writeln("Posibilidades Parciales"),
-                %imprimir_sudoku(NuevaPosibilidadesParcial),
-                % Llamada recursiva para procesar el siguiente índice
                 IndiceSiguiente is Indice + 1,
                 actualizar_posibilidades_con_unicos(NuevaPosibilidadesParcial,IndiceSiguiente,Indice_Guia  ,Unicos,Posibilidades_Fin)
             )      
@@ -698,10 +671,6 @@ actualizar_posibilidades_con_unicos(Posibilidades, Indice, Indice_Guia, Unicos, 
         IndiceSiguiente is Indice + 1,
         actualizar_posibilidades_con_unicos(Posibilidades,IndiceSiguiente, Indice_Guia ,Unicos,Posibilidades_Fin)
     ).
-
-
-
-
 
 
 
@@ -778,33 +747,6 @@ probar_regla_1 :-
     imprimir_sudoku(NuevaPosibilidades),
     format("Número de llamadas a resolver_regla_1: ~w~n", [Count]).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Aplicar la Regla 0 (iterativa "0_1") con contador
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Esto no se usa
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-aplicar_regla_0_1(Sudoku, Posibilidades, NuevoSudoku, CountIn, CountOut) :-
-    actualizar_sudoku(Sudoku, Posibilidades, SudokuActualizado),
-    NewCount is CountIn + 1,
-    (   Sudoku \= SudokuActualizado ->
-            resolver_regla_0_1(SudokuActualizado, NuevoSudoku, NewCount, CountOut)
-    ;   NuevoSudoku = Sudoku,
-        CountOut = NewCount
-    ).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Esto no se usa 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Wrapper sin contador explícito para aplicar_regla_0_1
-aplicar_regla_0_1(Sudoku, Posibilidades, NuevoSudoku) :-
-    aplicar_regla_0_1(Sudoku, Posibilidades, NuevoSudoku, 0, _).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Resolver la Regla 1 con contador
