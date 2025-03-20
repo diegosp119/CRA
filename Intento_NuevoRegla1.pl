@@ -482,3 +482,20 @@ probar_regla_0 :-
     imprimir_sudoku(NuevoTablero),
     generar_posibilidades(NuevoTablero, PosibilidadesActualizadas),
     imprimir_posibilidades(PosibilidadesActualizadas).
+
+
+
+
+
+
+[
+    ., 8, ., 5, 7, 6, 2, ., .,
+    ., ., ., 4, ., 2, ., ., .,
+    ., ., ., ., 3, 9, 5, 4, 8,
+    6, 3, ., 9, ., ., 8, 5, 2,
+    ., 9, ., 2, ., ., 3, 7, .,
+    8, ., ., ., 5, ., 6, 9, 4,
+    2, 5, 7, 6, ., 3, 4, 8, 9,
+    3, ., 8, 7, ., ., ., 2, 5,
+    ., 4, ., ., ., ., ., ., 6
+].
