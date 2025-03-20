@@ -1477,26 +1477,29 @@ contar_sudokus([Sudoku|Resto], Completos, Incompletos) :-
 
 % Predicado para resolver la Regla 0 para una lista de Sudokus
 
-
 resolver_regla_0_para_lista([], []).
 resolver_regla_0_para_lista([Sudoku|Resto], [SudokuResuelto|RestoResueltos]) :-
     resolver_regla_0(Sudoku, SudokuResuelto),
+    resolver_regla_0(Sudoku, SudokuResuelto,0,Count),
     resolver_regla_0_para_lista(Resto, RestoResueltos).
 
 %Las iteraciones aquí funcionan de manera que se llama a la regla 1, 2 o 3 y luego la regla 0 hace multiples iteraciones sobre si misma hasta que no hay cambios
 resolver_regla_1_para_lista([], []).
 resolver_regla_1_para_lista([Sudoku|Resto], [SudokuResuelto|RestoResueltos]) :-
     iterar_reglas_0_y_1(Sudoku, SudokuResuelto),
+    iterar_reglas_0_y_1(Sudoku, SudokuResuelto,IterCount),
     resolver_regla_1_para_lista(Resto, RestoResueltos).
 
 resolver_regla_2_para_lista([], []).
 resolver_regla_2_para_lista([Sudoku|Resto], [SudokuResuelto|RestoResueltos]) :-
     iterar_reglas_0_y_2(Sudoku, SudokuResuelto),
+    iterar_reglas_0_y_2(Sudoku, SudokuResuelto,IterCount),
     resolver_regla_2_para_lista(Resto, RestoResueltos).
 
 resolver_regla_3_para_lista([], []).
 resolver_regla_3_para_lista([Sudoku|Resto], [SudokuResuelto|RestoResueltos]) :-
     iterar_reglas_0_y_3(Sudoku, SudokuResuelto),
+    iterar_reglas_0_y_3(Sudoku, SudokuResuelto,IterCount),
     resolver_regla_3_para_lista(Resto, RestoResueltos).
 
 
