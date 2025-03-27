@@ -2,9 +2,9 @@
 % -------------------------------------------------------------------------------
 % Verificación Extendida Considerando las Posibilidades Precalculadas
 % -------------------------------------------------------------------------------
-% Ahora, en region_valida se verifica que para cada casilla vacía la lista
+% En region_valida se verifica que para cada casilla vacía la lista
 % de posibilidades proporcionada coincida exactamente con las posibilidades calculadas.
-% Esto detecta errores como la inclusión de un 9 cuando no debe aparecer.
+% Esto detecta errores como la inclusión de un número cuando no debe aparecer.
 % -------------------------------------------------------------------------------
 region_valida(Indices, Sudoku, PosList) :-
     % Extraer los números fijos de la región y verificar que no se repitan.
@@ -77,7 +77,7 @@ verificar_cuadrantes_poss(Sudoku, PosList) :-
 
 % -------------------------------------------------------------------------------
 % verificar_sudoku_poss/0: Predicado principal para verificar el estado actual
-% del Sudoku (en este caso, sudoku1) considerando las posibilidades precalculadas.
+% del Sudoku considerando las posibilidades precalculadas.
 % Se genera la lista de posibilidades, se imprime, se introduce un error
 % añadiendo un 9 extra en la lista de posibilidades de la primera casilla vacía,
 % y luego se procede a verificar filas, columnas y bloques.
